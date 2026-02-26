@@ -1,0 +1,68 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+android {
+    namespace = "com.credit.creditvault"
+    // Use Flutter's compileSdk; plugin may warn but it's safe. This avoids SDK 35 jlink issues.
+    compileSdk = 36
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        // Align with plugin requirements and modern AGP defaults
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+        coreLibraryDesugaringEnabled = true
+    }
+
+    kotlinOptions {
+        // Kotlin JVM target must match the Java target
+        jvmTarget = "17"
+    }
+
+    defaultConfig {
+        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        applicationId = "com.credit.creditvault"
+        // You can update the following values to match your application needs.
+        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        // geolocator_android requires minSdkVersion 22, so override Flutter's default (21).
+        minSdkVersion = flutter.minSdkVersion
+        // Set targetSdk to 35 to match compileSdk and support BackEvent (API 35)
+        targetSdk = 35
+        versionCode = 9
+        versionName = "1.7.0"
+    }
+
+    buildTypes {
+        release {
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            signingConfig = signingConfigs.debug
+
+            // Enable R8/ProGuard for the app and apply our own rules.
+            // This also lets us consume missing_rules like -dontwarn android.window.BackEvent.
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles(
+                    getDefaultProguardFile('proguard-android-optimize.txt'),
+                    'proguard-rules.pro'
+            )
+        }
+        debug {
+            // Keep debug builds unminified for easier debugging.
+            minifyEnabled false
+            shrinkResources false
+        }
+    }
+}
+
+flutter {
+    source = "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
+}

@@ -1,0 +1,32 @@
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.buildDir = "../build"
+
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+
+subprojects {
+    project.evaluationDependsOn(":app")
+
+    // Work around R8 missing android.window.BackEvent in flutter_inappwebview.
+    // Disable minification just for that plugin's release build to avoid R8 errors.
+    if (project.name == "flutter_inappwebview" && project.hasProperty("android")) {
+        android {
+            buildTypes {
+                release {
+                    minifyEnabled false
+                }
+            }
+        }
+    }
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}

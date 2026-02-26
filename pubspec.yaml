@@ -1,0 +1,163 @@
+name: coach_student
+description: A new Flutter project.
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
+  cupertino_icons: ^1.0.8
+  gap: ^3.0.1
+  auto_size_text: ^3.0.0
+  grouped_list: ^6.0.0
+
+  table_calendar: ^3.1.2
+
+  cached_network_image: ^3.2.1
+  intl: ^0.19.0
+  timezone: ^0.9.4
+  flutter_svg: ^2.0.14
+  flutter_svg_provider: ^1.0.7
+  fluttertoast: ^8.2.8
+  flutter_local_notifications: ^18.0.1
+  dio: ^5.7.0
+  geolocator: ^13.0.2
+  geocoding: ^3.0.0
+  google_maps_flutter: ^2.10.0
+  shared_preferences: ^2.3.3
+  url_launcher: ^6.3.1
+  flutter_riverpod: ^2.6.1
+  image_picker: ^1.1.2
+  flutter_typeahead: ^5.2.0
+  firebase_core: ^3.8.0
+  firebase_messaging: ^15.1.5
+  flutter_chat_ui: ^1.6.15
+  path_provider: ^2.1.5
+  uuid: ^4.5.1
+  file_picker: ^8.1.4
+  cloud_firestore: ^5.5.2
+  logger: ^2.5.0
+  loading_animation_widget: ^1.2.1
+  mobile_scanner: ^5.2.3
+  qr_flutter: ^4.1.0
+  font_awesome_flutter: ^10.9.0
+
+  flutter_easyloading: ^3.0.5
+  timeago: ^3.7.0
+  pretty_dio_logger: ^1.4.0
+  google_places_flutter: ^2.0.9
+  flutter_chat_types: ^3.6.2
+  talker_dio_logger: ^4.5.3
+  image_cropper: ^8.0.2
+  permission_handler: ^11.3.1
+  onepref: ^0.0.16
+  firebase_crashlytics: ^4.1.5
+  app_links: ^6.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^5.0.0
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter packages.
+flutter:
+  # The following line ensures that the Material Icons font is
+  # included with your application, so that you can use the icons in
+  # the material Icons class.
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+
+  assets:
+    - assets/
+    - assets/images/
+  # fonts:
+  #   - family: Noto Sans
+  #     fonts:
+  #       - asset: assets/fonts/NotoSansSemiBold.ttf
+  #         weight: 600
+  #   - family: Public Sans
+  #     fonts:
+  #       - asset: assets/fonts/PublicSansRegular.ttf
+  #         weight: 400
+  #       - asset: assets/fonts/PublicSansBold.ttf
+  #         weight: 700
+  #       - asset: assets/fonts/PublicSansLight.ttf
+  #         weight: 300
+  #   - family: Nunito Sans
+  #     fonts:
+  #       - asset: assets/fonts/NunitoSansSemiBold.ttf
+  #         weight: 600
+  #       - asset: assets/fonts/NunitoSansBold.ttf
+  #         weight: 700
+  #       - asset: assets/fonts/NunitoSansRegular.ttf
+  #         weight: 400
+  #       - asset: assets/fonts/NunitoSansExtraBold.ttf
+  #         weight: 800
+  #   - family: Montserrat
+  #     fonts:
+  #       - asset: assets/fonts/MontserratMedium.ttf
+  #         weight: 500
+  #   - family: Lato
+  #     fonts:
+  #       - asset: assets/fonts/LatoRegular.ttf
+  #         weight: 400
+  #   - family: Roboto
+  #     fonts:
+  #       - asset: assets/fonts/RobotoRomanMedium.ttf
+  #         weight: 500
+
+  fonts:
+    - family: Noto Sans
+      fonts:
+        - asset: assets/fonts/NotoSansSemiBold.ttf
+          weight: 600
+    - family: Public Sans
+      fonts:
+        - asset: assets/fonts/PublicSansRegular.ttf
+          weight: 400
+        - asset: assets/fonts/PublicSansBold.ttf
+          weight: 700
+        - asset: assets/fonts/PublicSansLight.ttf
+          weight: 300
+    - family: Nunito Sans
+      fonts:
+        - asset: assets/fonts/NunitoSansSemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/NunitoSansBold.ttf
+          weight: 700
+        - asset: assets/fonts/NunitoSansRegular.ttf
+          weight: 400
+        - asset: assets/fonts/NunitoSansExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/NunitoSansExtraLight.ttf
+          weight: 200
+    - family: Montserrat
+      fonts:
+        - asset: assets/fonts/MontserratMedium.ttf
+          weight: 500
+    - family: Lato
+      fonts:
+        - asset: assets/fonts/LatoRegular.ttf
+          weight: 400
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/RobotoRomanMedium.ttf
+          weight: 500
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/NunitoBold.ttf
+          weight: 700
