@@ -7,7 +7,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ">=3.6.0 <4.0.0"
+  sdk: ">=3.5.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -47,7 +47,7 @@ dependencies:
   cloud_firestore: ^5.5.2
   logger: ^2.5.0
   loading_animation_widget: ^1.2.1
-  mobile_scanner: ^5.2.3
+  qr_code_scanner_new: ^1.0.1
   qr_flutter: ^4.1.0
   font_awesome_flutter: ^10.9.0
 
@@ -68,6 +68,11 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^5.0.0
+
+# Fix: image_cropper_platform_interface 7.2.0 uses Color.toARGB32() which requires Flutter 3.16+.
+# Override to 7.0.0 which uses Color.value (compatible with older Flutter).
+dependency_overrides:
+  image_cropper_platform_interface: 7.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

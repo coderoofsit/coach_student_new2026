@@ -1,111 +1,102 @@
+import 'dart:io';
+
 import 'package:coach_student/models/CoachProfileDetailsModel.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:qr_code_scanner_new/qr_code_scanner.dart';
 
 import '../../../services/api/api.dart';
 import '../coach_profile_screen/coach_profile_screen.dart';
 
-class QrCodeScanner  extends StatefulWidget {
-   const QrCodeScanner ({super.key});
+class QrCodeScanner extends StatefulWidget {
+  const QrCodeScanner({super.key});
 
   @override
   State<QrCodeScanner> createState() => _QrCodeScannerState();
 }
 
 class _QrCodeScannerState extends State<QrCodeScanner> {
-  MobileScannerController cameraController = MobileScannerController();
+  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
+  QRViewController? controller;
+  final List<String> scannedCodes = [];
 
-  List<Barcode> barcodeList = [];
-
-  Future<void> getCoach(BuildContext context,String code) async {
-
-    List<String> strList = [] ;
-    if(code.contains("*")) {
+  Future<void> getCoach(BuildContext context, String code) async {
+    List<String> strList = [];
+    if (code.contains("*")) {
       strList = code.split("*");
     }
 
-    String finalUrl = strList.isEmpty ? "/coach?passcode=$code" : "/coach?passcode=${strList.first}" ;
+    String finalUrl =
+        strList.isEmpty ? "/coach?passcode=$code" : "/coach?passcode=${strList.first}";
     final result = await DioApi.get(path: finalUrl);
 
     if (result.response?.data != null) {
+      debugPrint('coach passcode ${result.response?.data}');
 
-      print("coach passcode ${result.response?.data}");
-      
-      CoachProfileDetailsModel coachProfile = CoachProfileDetailsModel.fromJson(result.response?.data["coaches"][0]);
-      // Utils.toast(message: '${result.response?.data["message"]}');
-      if(strList.isNotEmpty){
+      CoachProfileDetailsModel coachProfile =
+          CoachProfileDetailsModel.fromJson(result.response?.data["coaches"][0]);
+      if (strList.isNotEmpty) {
         coachProfile.referralCode = strList.last;
       }
 
-      Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-        return  CoachProfileScreen(coachProfileDetailsModel: coachProfile,);
-      })).then((value) => {
-        barcodeList = []
-      });
-    } else {
-      // Utils.toast(message: '${result.response?.data["message"]}');
-      // result.handleError(context);
+      Navigator.of(context)
+          .push(MaterialPageRoute(
+            builder: (context) => CoachProfileScreen(coachProfileDetailsModel: coachProfile),
+          ))
+          .then((_) => scannedCodes.clear());
     }
+  }
+
+  void _onQRViewCreated(QRViewController controller) {
+    this.controller = controller;
+    controller.scannedDataStream.listen((scanData) {
+      if (scannedCodes.isEmpty) {
+        final code = scanData.code ?? '';
+        if (code.isNotEmpty && !scannedCodes.contains(code)) {
+          scannedCodes.add(code);
+          debugPrint('Barcode found! $code');
+          getCoach(context, code);
+        }
+      }
+    });
+  }
+
+  @override
+  void reassemble() {
+    super.reassemble();
+    if (Platform.isAndroid) {
+      controller?.pauseCamera();
+    } else if (Platform.isIOS) {
+      controller?.resumeCamera();
+    }
+  }
+
+  @override
+  void dispose() {
+    controller?.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mobile Scanner'),
+        title: const Text('QR Scanner'),
         actions: [
           IconButton(
             color: Colors.white,
-            icon: ValueListenableBuilder<MobileScannerState>(
-              valueListenable: cameraController,
-              builder: (context, state, child) {
-                final torchState = state.torchState;
-                switch (torchState) {
-                  case TorchState.off:
-                    return const Icon(Icons.flash_off, color: Colors.grey);
-                  case TorchState.on:
-                    return const Icon(Icons.flash_on, color: Colors.yellow);
-                  case TorchState.unavailable:
-                    return const Icon(Icons.flash_off, color: Colors.grey);
-                  case TorchState.auto:
-                    return const Icon(Icons.flash_auto, color: Colors.grey);
-                }
-              },
-            ),
-            iconSize: 32.0,
-            onPressed: () => cameraController.toggleTorch(),
+            icon: const Icon(Icons.flash_on),
+            onPressed: () => controller?.toggleFlash(),
           ),
           IconButton(
             color: Colors.white,
-            icon: ValueListenableBuilder<MobileScannerState>(
-              valueListenable: cameraController,
-              builder: (context, state, child) {
-                final facing = state.cameraDirection;
-                switch (facing) {
-                  case CameraFacing.front:
-                    return const Icon(Icons.camera_front);
-                  case CameraFacing.back:
-                    return const Icon(Icons.camera_rear);
-                }
-              },
-            ),
-            iconSize: 32.0,
-            onPressed: () => cameraController.switchCamera(),
+            icon: const Icon(Icons.cameraswitch),
+            onPressed: () => controller?.flipCamera(),
           ),
         ],
       ),
-      body: MobileScanner(
-        // fit: BoxFit.contain,
-        controller: cameraController,
-        onDetect: (capture) {
-          final Barcode barcodes = capture.barcodes.last;
-          if(barcodeList.isEmpty){
-            barcodeList.add(barcodes);
-            debugPrint(' Barcode found! ${barcodes.rawValue}');
-            getCoach(context, barcodes.rawValue ?? "");
-          }
-        },
+      body: QRView(
+        key: qrKey,
+        onQRViewCreated: _onQRViewCreated,
       ),
     );
   }
