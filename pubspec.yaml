@@ -68,6 +68,7 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
 
 # Fix: image_cropper_platform_interface 7.2.0 uses Color.toARGB32() which requires Flutter 3.16+.
 # Override to 7.0.0 which uses Color.value (compatible with older Flutter).
@@ -166,3 +167,13 @@ flutter:
       fonts:
         - asset: assets/fonts/NunitoBold.ttf
           weight: 700
+
+# Flutter Launcher Icons configuration
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/CreditVault-LOGO.png"
+  min_sdk_android: 21 # Android min sdk min:16, default 21
+  adaptive_icon_background: "#000000" # Background color for adaptive icon (Android)
+  adaptive_icon_foreground: "assets/images/CreditVault-LOGO.png" # Foreground image for adaptive icon (Android)
+  remove_alpha_ios: true # Remove alpha channel for iOS (required for App Store)

@@ -15,7 +15,6 @@ import 'dart:ui';
 import 'core/constants/constants.dart';
 import 'firebase_options.dart';
 import 'routes/app_routes.dart';
-import 'services/notification_service/notification_controller.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -88,6 +87,9 @@ class _MyAppState extends State<MyApp> {
   permissionNotifcation() async {
     NotificationServices notification = NotificationServices();
 
+    // Initialize local notifications early for both iOS and Android
+    await notification.initLocalNotifications(context);
+    
     notification.forgroundMessage();
     notification.firebaseInit(context);
     notification.setupInteractMessage(context);

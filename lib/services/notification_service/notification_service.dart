@@ -16,48 +16,62 @@ class NotificationServices {
   //initialising firebase message plugin
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
   FlutterLocalNotificationsPlugin();
+  
+  bool _isLocalNotificationsInitialized = false;
 
-  //function to initialise flutter local notification plugin to show notifications for android when app is active
-  void initLocalNotifications(
-      BuildContext context, RemoteMessage message) async {
-    int msgCount = 0 ;
+  //function to initialise flutter local notification plugin to show notifications for android and iOS when app is active
+  Future<void> initLocalNotifications(BuildContext context) async {
+    if (_isLocalNotificationsInitialized) {
+      return;
+    }
+    
     var androidInitializationSettings =
     const AndroidInitializationSettings('@mipmap/ic_launcher');
-    var iosInitializationSettings = const DarwinInitializationSettings();
+    var iosInitializationSettings = const DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
 
     var initializationSetting = InitializationSettings(
         android: androidInitializationSettings, iOS: iosInitializationSettings);
 
     await _flutterLocalNotificationsPlugin.initialize(initializationSetting,
         onDidReceiveNotificationResponse: (payload) {
-
-          msgCount++;
-          print("msgcount ===  $msgCount");
-          handleMessage(context, message);
+          if (kDebugMode) {
+            print("Notification tapped: $payload");
+          }
+          // Handle notification tap if needed
         });
+    
+    _isLocalNotificationsInitialized = true;
   }
 
   void firebaseInit(BuildContext context) {
-    FirebaseMessaging.onMessage.listen((message) {
+    FirebaseMessaging.onMessage.listen((message) async {
       RemoteNotification? notification = message.notification;
-      AndroidNotification? android = message.notification!.android;
 
       if (kDebugMode) {
-
-        print("noti title:${notification!.title}");
+        print("noti title:${notification?.title}");
         print("badges :$notification");
-        print("notifications body:${notification.body}");
-        print('count:${android!.count}');
+        print("notifications body:${notification?.body}");
         print('data:${message.data.toString()}');
       }
 
       if (Platform.isIOS) {
-
         forgroundMessage();
+        // Ensure local notifications are initialized
+        await initLocalNotifications(context);
+        showNotification(message);
       }
 
       if (Platform.isAndroid) {
-        initLocalNotifications(context, message);
+        AndroidNotification? android = message.notification?.android;
+        if (kDebugMode) {
+          print('count:${android?.count}');
+        }
+        // Ensure local notifications are initialized
+        await initLocalNotifications(context);
         showNotification(message);
       }
     });
