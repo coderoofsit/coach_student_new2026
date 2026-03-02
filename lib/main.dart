@@ -22,10 +22,16 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  try {
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    }
+  } on FirebaseException catch (e) {
+    if (e.code != 'duplicate-app') rethrow;
+  }
 
-  print(message.notification!.title.toString());
-  print(message.notification!.body.toString());
+  print(message.notification?.title?.toString() ?? '');
+  print(message.notification?.body?.toString() ?? '');
   print(message.data.toString());
 }
 
@@ -52,12 +58,22 @@ void main() async {
     ),
   );
 
-  await Future.wait([
-    Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    ),
-    // NotificationController.initializeLocalNotifications(debug: true)
-  ]);
+  // Initialize Firebase - catch duplicate-app when native iOS already configured it
+  try {
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
+  } on FirebaseException catch (e) {
+    if (e.code != 'duplicate-app') rethrow;
+  } catch (e) {
+    if (e.toString().contains('duplicate-app')) {
+      // Ignore - app already initialized
+    } else {
+      rethrow;
+    }
+  }
 
   // Pass all uncaught "fatal" errors from the framework to Crashlytics
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
