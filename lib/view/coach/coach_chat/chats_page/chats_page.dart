@@ -49,26 +49,8 @@ class ChatsPageCoachState extends State<ChatsPageCoach>
     return finalString;
   }
 
-  void _addMessage(types.Message message) {
-    setState(() {
-      _messagesList.insert(0, message);
-    });
-  }
-
-  void _handlePreviewDataFetched(
-    types.TextMessage message,
-    types.PreviewData previewData,
-  ) {
-    final index =
-        _messagesList.indexWhere((element) => element.id == message.id);
-    final updatedMessage = (_messagesList[index] as types.TextMessage).copyWith(
-      previewData: previewData,
-    );
-
-    setState(() {
-      _messagesList[index] = updatedMessage;
-    });
-  }
+  // Note: preview-data and local-only message insertion handlers are not used
+  // currently because messages are driven purely from Firestore streams.
 
   // void _handleSendPressed(types.PartialText message) async {
   //   // final time = DateTime.now().toString();
@@ -111,7 +93,7 @@ class ChatsPageCoachState extends State<ChatsPageCoach>
       receiverId: widget.user.userId,
       senderName: _userAuther.firstName ?? "",
       message: message.text,
-      // receiverId: _userAuther.id
+      senderId: _userAuther.id,
     );
   }
 
@@ -193,7 +175,7 @@ class ChatsPageCoachState extends State<ChatsPageCoach>
         receiverId: widget.user.userId,
         senderName: _userAuther.firstName ?? "",
         message: "you have a new message",
-        // receiverId: _userAuther.id
+        senderId: _userAuther.id,
       );
     } catch (e) {
       print("something went wrong while sending first msg $e");
@@ -264,45 +246,47 @@ class ChatsPageCoachState extends State<ChatsPageCoach>
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        body: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildAppBar(context),
-            Expanded(
-              // height: 500,
-              child: StreamBuilder(
-                  stream: getAllMessages(widget.user.userId, _userAuther.id),
-                  builder: (context, snapshot) {
-                    switch (snapshot.connectionState) {
-                      case ConnectionState.none:
-                        return const SizedBox.shrink();
-                      case ConnectionState.active:
-                      case ConnectionState.done:
-                      case ConnectionState.waiting:
-                        if (snapshot.data == null) {
-                          return const SizedBox();
-                        }
-                        final snapData = snapshot.data!.docs.toList();
-                        _messagesList = snapData
-                            .map((e) => types.Message.fromJson(e.data()))
-                            .toList();
+  Widget build(BuildContext context) {
+    super.build(context); // Required by AutomaticKeepAliveClientMixin
+    return Scaffold(
+      body: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildAppBar(context),
+          Expanded(
+            child: StreamBuilder(
+                stream: getAllMessages(widget.user.userId, _userAuther.id),
+                builder: (context, snapshot) {
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.none:
+                      return const SizedBox.shrink();
+                    case ConnectionState.active:
+                    case ConnectionState.done:
+                    case ConnectionState.waiting:
+                      if (snapshot.data == null) {
+                        return const SizedBox();
+                      }
+                      final snapData = snapshot.data!.docs.toList();
+                      _messagesList = snapData
+                          .map((e) => types.Message.fromJson(e.data()))
+                          .toList();
 
-                        return Chat(
-                          messages: _messagesList,
-                          usePreviewData: true,
-                          onSendPressed: _handleSendPressed,
-                          showUserAvatars: true,
-                          showUserNames: true,
-                          user: _userAuther,
-                          theme: const DefaultChatTheme(),
-                        );
-                    }
-                  }),
-            ),
-          ],
-        ),
-      );
+                      return Chat(
+                        messages: _messagesList,
+                        usePreviewData: true,
+                        onSendPressed: _handleSendPressed,
+                        showUserAvatars: true,
+                        showUserNames: true,
+                        user: _userAuther,
+                        theme: const DefaultChatTheme(),
+                      );
+                  }
+                }),
+          ),
+        ],
+      ),
+    );
+  }
 
   Stream<QuerySnapshot<Map<String, dynamic>>?>? getAllMessages(
     String sid,

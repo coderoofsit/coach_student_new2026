@@ -112,7 +112,7 @@ class ChatsPageStudentState extends State<ChatsPageStudent> {
       receiverId: widget.user.userId,
       senderName: _user.firstName ?? "",
       message: message.text,
-      // receiverId: _userAuther.id
+      senderId: _user.id,
     );
   }
 
@@ -169,7 +169,7 @@ class ChatsPageStudentState extends State<ChatsPageStudent> {
         receiverId: widget.user.userId,
         senderName: _user.firstName ?? "",
         message: "you have a new message",
-        // receiverId: _userAuther.id
+        senderId: _user.id,
       );
     } catch (e) {
       print("something went wrong while sending first msg $e");
@@ -210,8 +210,8 @@ class ChatsPageStudentState extends State<ChatsPageStudent> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     updateCurrentUserTime();
+    super.dispose();
   }
 
   // void _loadMessages() async {
