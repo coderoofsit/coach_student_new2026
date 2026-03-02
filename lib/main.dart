@@ -86,6 +86,28 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  Future<void> _syncFcmTokenToBackend(String fcmToken) async {
+    // On every sync attempt, only update if user is logged in and token is non-empty.
+    final String authToken = SharedPreferencesManager.getToken();
+    final String userType = SharedPreferencesManager.getUserType();
+
+    if (authToken.isEmpty || fcmToken.isEmpty) return;
+
+    try {
+      final data = FormData.fromMap({"fcmToken": fcmToken});
+
+      if (userType == Utils.coachType) {
+        await DioApi.put(path: ConfigUrl.coachProfileUpdate, data: data);
+      } else {
+        // For students and parents we use the student profile endpoint
+        await DioApi.put(path: ConfigUrl.updateStudentProfile, data: data);
+      }
+      logger.i("Synced FCM token to backend");
+    } catch (e, stackTrace) {
+      logger.e("Failed to sync FCM token to backend: $e\n$stackTrace");
+    }
+  }
+
   permissionNotifcation() async {
     NotificationServices notification = NotificationServices();
 
@@ -102,25 +124,14 @@ class _MyAppState extends State<MyApp> {
     logger.i("fcm permisiion Main $status");
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-    // On every app open, if the user is logged in, push the latest FCM token to the backend.
-    final String authToken = SharedPreferencesManager.getToken();
-    final String userType = SharedPreferencesManager.getUserType();
+    // On every app open, push the latest FCM token to the backend.
+    await _syncFcmTokenToBackend(fcmToken);
 
-    if (authToken.isNotEmpty && fcmToken.isNotEmpty) {
-      try {
-        final data = FormData.fromMap({"fcmToken": fcmToken});
-
-        if (userType == Utils.coachType) {
-          await DioApi.put(path: ConfigUrl.coachProfileUpdate, data: data);
-        } else {
-          // For students and parents we use the student profile endpoint
-          await DioApi.put(path: ConfigUrl.updateStudentProfile, data: data);
-        }
-        logger.i("Synced FCM token to backend on app start");
-      } catch (e, stackTrace) {
-        logger.e("Failed to sync FCM token on app start: $e\n$stackTrace");
-      }
-    }
+    // Also listen for FCM token refresh events and resync automatically.
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
+      logger.i("FCM token refreshed: $newToken");
+      await _syncFcmTokenToBackend(newToken);
+    });
   }
 
   @override
