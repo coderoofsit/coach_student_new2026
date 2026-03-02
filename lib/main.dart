@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:coach_student/SharedPref/Shared_pref.dart';
 import 'package:coach_student/core/utils/utils.dart';
 import 'package:coach_student/services/notification_service/notification_service.dart';
+import 'package:coach_student/services/api/api_serivce_export.dart';
 import 'package:coach_student/theme/theme_helper.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -9,6 +10,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'dart:ui';
@@ -94,16 +96,31 @@ class _MyAppState extends State<MyApp> {
     notification.firebaseInit(context);
     notification.setupInteractMessage(context);
     notification.requestNotificationPermission();
-    final String token = await notification.getDeviceToken();
+    final String fcmToken = await notification.getDeviceToken();
 
     PermissionStatus status = await Permission.notification.request();
     logger.i("fcm permisiion Main $status");
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-    FirebaseMessaging.instance.getToken().then((value) {
-      logger.i("fcm token  $value");
-      SharedPreferencesManager.setFcmToken(fcmToken: value ?? "");
-      logger.i("fcm token Main ${SharedPreferencesManager.getFcmToken()}");
-    });
+
+    // On every app open, if the user is logged in, push the latest FCM token to the backend.
+    final String authToken = SharedPreferencesManager.getToken();
+    final String userType = SharedPreferencesManager.getUserType();
+
+    if (authToken.isNotEmpty && fcmToken.isNotEmpty) {
+      try {
+        final data = FormData.fromMap({"fcmToken": fcmToken});
+
+        if (userType == Utils.coachType) {
+          await DioApi.put(path: ConfigUrl.coachProfileUpdate, data: data);
+        } else {
+          // For students and parents we use the student profile endpoint
+          await DioApi.put(path: ConfigUrl.updateStudentProfile, data: data);
+        }
+        logger.i("Synced FCM token to backend on app start");
+      } catch (e, stackTrace) {
+        logger.e("Failed to sync FCM token on app start: $e\n$stackTrace");
+      }
+    }
   }
 
   @override
@@ -116,7 +133,6 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     log("token user :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: ${SharedPreferencesManager.getToken()}");
-    log("token user FCM TOKEN :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: ${SharedPreferencesManager.getFcmToken()}");
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent, // Transparent status bar

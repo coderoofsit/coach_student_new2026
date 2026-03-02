@@ -55,8 +55,7 @@ class _LoginScreenConsumerState extends ConsumerState<LoginScreen> {
    );
    log('User granted permission: ${settings.authorizationStatus}');
    FirebaseMessaging.instance.getToken().then((value) {
-     SharedPreferencesManager.setFcmToken(fcmToken: value ?? "");
-     logger.i("fcm token Main ${SharedPreferencesManager.getFcmToken()}");
+     logger.i("fcm token Main $value");
    });
  }
 

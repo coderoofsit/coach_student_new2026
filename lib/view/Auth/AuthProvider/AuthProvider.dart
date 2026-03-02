@@ -7,6 +7,7 @@ import 'package:coach_student/models/student_list_model.dart';
 import 'package:coach_student/models/student_model.dart';
 import 'package:coach_student/models/student_profile_model.dart';
 import 'package:coach_student/services/api/api_serivce_export.dart';
+import 'package:coach_student/services/notification_service/notification_service.dart';
 import 'package:coach_student/view/coach/bottom_navbar/coach_bottomnavbar.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -74,13 +75,17 @@ class AuthProvider extends ChangeNotifier {
         data: data,
       );
       if (result.response != null) {
-      SharedPreferencesManager.setUserType(userTpe: userType);
-      SharedPreferencesManager.setToken(token: result.response?.data['token']);
-      log("tokenFCM TOKEN ${SharedPreferencesManager.getFcmToken()} ");
-      if (userType == Utils.coachType) {
-        await coachFCMTOKEN(fcmToken: SharedPreferencesManager.getFcmToken());
-      }else{
-       await studentFcmToken(fcmToken: SharedPreferencesManager.getFcmToken(), context: context).then((value) async{
+        SharedPreferencesManager.setUserType(userTpe: userType);
+        SharedPreferencesManager.setToken(token: result.response?.data['token']);
+
+        // Fetch a fresh FCM token after login and sync it to the backend
+        final notificationServices = NotificationServices();
+        final fcmToken = await notificationServices.getDeviceToken();
+
+        if (userType == Utils.coachType) {
+          await coachFCMTOKEN(fcmToken: fcmToken);
+        } else {
+          await studentFcmToken(fcmToken: fcmToken, context: context).then((value) async{
           if (userType == Utils.studentType) {
          print("user data ===  ${result.response?.data['user']}");
 
@@ -552,8 +557,7 @@ class AuthProvider extends ChangeNotifier {
     });
     log("tokenFCM TOKEN $fcmToken ");
 
-    Result result =
-        await DioApi.put(path: ConfigUrl.coachProfileUpdate, data: data);
+    await DioApi.put(path: ConfigUrl.coachProfileUpdate, data: data);
   }
 }
 
