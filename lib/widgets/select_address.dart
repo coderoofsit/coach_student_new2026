@@ -82,7 +82,7 @@ class SelectAddress extends ConsumerWidget {
       googleAPIKey: ConfigUrl.mapApiKey,
       inputDecoration: decoration,
       debounceTime: 800,
-      countries: const ["in"],
+      countries: const ["us"],
       isLatLngRequired: true,
       getPlaceDetailWithLatLng: (prediction) {
         print("Coordinates: (${prediction.lat}, ${prediction.lng})");
