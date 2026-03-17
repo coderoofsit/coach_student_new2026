@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/app_export.dart';
+import '../../../core/utils/utils.dart';
 import '../../../features/onboarding/onboarding_provider.dart';
 import '../../../widgets/custom_elevated_button.dart';
 
@@ -740,81 +741,76 @@ class _TrialPrimerStep2 extends StatelessWidget {
   }
 }
 
-class _PaywallStep extends StatefulWidget {
+class _PaywallStep extends ConsumerWidget {
   @override
-  State<_PaywallStep> createState() => _PaywallStepState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedPlan = ref.watch(onboardingProvider).selectedPlan;
 
-class _PaywallStepState extends State<_PaywallStep> {
-  String _selectedPlan = 'Annual';
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer(
-      builder: (context, ref, child) {
-        return Padding(
-          padding: EdgeInsets.all(24.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 20.v),
-              Text("Choose Your Plan", style: theme.textTheme.headlineSmall),
-              SizedBox(height: 30.v),
-              _buildPlanOption(
-                context,
-                id: 'Monthly',
-                title: "Monthly",
-                price: "\$12.99",
-                subtitle: "No free trial",
-                isSelected: _selectedPlan == 'Monthly',
-                onTap: () => setState(() => _selectedPlan = 'Monthly'),
-              ),
-              SizedBox(height: 16.v),
-              _buildPlanOption(
-                context,
-                id: 'Annual',
-                title: "Annual ⭐ Best Value",
-                price: "\$99/year",
-                subtitle: "14 day FREE trial",
-                isSelected: _selectedPlan == 'Annual',
-                extraInfo: "(\$8.25/month) • Save \$56 per year",
-                onTap: () => setState(() => _selectedPlan = 'Annual'),
-              ),
-              const Spacer(),
-              CustomElevatedButton(
-                text: "Get Started",
-                onPressed: () async {
-                  final success = await ref.read(onboardingProvider.notifier).completeOnboarding();
-                  if (success && context.mounted) {
-                    Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      AppRoutes.coachBottomNavBar,
-                      (route) => false,
-                    );
-                  }
-                },
-              ),
-              SizedBox(height: 10.v),
-              Center(
-                child: TextButton(
-                  onPressed: () async {
-                    final success = await ref.read(onboardingProvider.notifier).completeOnboarding();
-                    if (success && context.mounted) {
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        AppRoutes.coachBottomNavBar,
-                        (route) => false,
-                      );
-                    }
-                  },
-                  child: Text("Skip for now", style: CustomTextStyles.bodySmallBlack900),
-                ),
-              ),
-              SizedBox(height: 20.v),
-            ],
+    return Padding(
+      padding: EdgeInsets.all(24.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: 20.v),
+          Text("Choose Your Plan", style: theme.textTheme.headlineSmall),
+          SizedBox(height: 30.v),
+          _buildPlanOption(
+            context,
+            id: 'Monthly',
+            title: "Monthly",
+            price: "\$12.99",
+            subtitle: "No free trial",
+            isSelected: selectedPlan == 'Monthly',
+            onTap: () => ref.read(onboardingProvider.notifier).updateSelectedPlan('Monthly'),
           ),
-        );
-      },
+          SizedBox(height: 16.v),
+          _buildPlanOption(
+            context,
+            id: 'Annual',
+            title: "Annual ⭐ Best Value",
+            price: "\$99/year",
+            subtitle: "14 day FREE trial",
+            isSelected: selectedPlan == 'Annual',
+            extraInfo: "(\$8.25/month) • Save \$56 per year",
+            onTap: () => ref.read(onboardingProvider.notifier).updateSelectedPlan('Annual'),
+          ),
+          const Spacer(),
+          CustomElevatedButton(
+            text: "Get Started",
+            onPressed: () async {
+              await ref.read(onboardingProvider.notifier).completeOnboarding();
+              if (context.mounted) {
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.registationScreen,
+                  arguments: {
+                    'userType': Utils.coachType,
+                  },
+                );
+              }
+            },
+          ),
+          SizedBox(height: 10.v),
+          Center(
+            child: TextButton(
+              onPressed: () async {
+                await ref.read(onboardingProvider.notifier).completeOnboarding();
+                if (context.mounted) {
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.registationScreen,
+                    arguments: {
+                      'userType': Utils.coachType,
+                    },
+                  );
+                }
+              },
+              child: Text("Skip for now", style: CustomTextStyles.bodySmallBlack900),
+            ),
+          ),
+          SizedBox(height: 20.v),
+        ],
+      ),
     );
   }
 

@@ -205,13 +205,11 @@ class AuthProvider extends ChangeNotifier {
         required String gender,
         required File? file,
         required String userType,
-        // required String latitude,
-        // required String longitude,
-        // required String radius,
         required String about,
         required String chargesPerHours,
         required String phoneNumber,
-        // required String address,
+        Map<String, dynamic>? onboardingData,
+        String? anonymousId,
       }) async {
     isLoadingRegistation = true;
     notifyListeners();
@@ -226,7 +224,8 @@ class AuthProvider extends ChangeNotifier {
       "phoneNumber": phoneNumber,
       "chargePerHour": chargesPerHours,
       "about": about,
-
+      if (onboardingData != null) ...onboardingData,
+      if (anonymousId != null && anonymousId.isNotEmpty) 'anonymousId': anonymousId,
     });
     Result result = await DioApi.post(path: ConfigUrl.coachSignUp, data: data);
     if (result.response != null) {

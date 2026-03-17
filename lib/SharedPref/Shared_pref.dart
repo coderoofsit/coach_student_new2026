@@ -151,4 +151,12 @@ class SharedPreferencesManager {
   static bool getIsOnboardingComplete() {
     return _prefs.getBool("isOnboardingComplete") ?? false;
   }
+
+  static void setAnonymousId(String id) {
+    _prefs.setString("anonymousId", id);
+  }
+
+  static String getAnonymousId() {
+    return _prefs.getString("anonymousId") ?? "";
+  }
 }

@@ -74,7 +74,7 @@ class CoachAuthScreen extends StatelessWidget {
               SizedBox(height: 25.v),
               CustomElevatedButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.registationScreen,
+                  Navigator.pushNamed(context, AppRoutes.onboardingScreen,
                       arguments: {
                         'userType': userType,
                       });

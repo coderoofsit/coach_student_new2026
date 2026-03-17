@@ -12,7 +12,9 @@ import 'package:coach_student/widgets/custom_text_form_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../SharedPref/Shared_pref.dart';
 import '../../../widgets/terms_condition_page.dart';
+import 'package:coach_student/features/onboarding/onboarding_provider.dart';
 
 class RegisterCoach extends ConsumerStatefulWidget {
   final String password;
@@ -704,6 +706,9 @@ class _RegisterCoachConsumerState extends ConsumerState<RegisterCoach> {
                 //     .read(mapProvider)
                 //     .getLatLngFromAddress(textEditingController.text);
 
+                final onboardingData = ref.read(onboardingProvider);
+                final anonymousId = SharedPreferencesManager.getAnonymousId();
+
                 ref.read(authNotifier).registerCoach(
                       context,
                       name: nameController.text,
@@ -713,13 +718,11 @@ class _RegisterCoachConsumerState extends ConsumerState<RegisterCoach> {
                       gender: selectedGender!,
                       userType: widget.userType,
                       file: _image,
-                      // latitude: "0",
-                      // longitude: "0",
-                      // radius: "0",
                       about: aboutController.text,
                       chargesPerHours: "0",
                       phoneNumber: phoneController.text,
-                      // address: textEditingController.text,
+                      onboardingData: onboardingData.toJson(),
+                      anonymousId: anonymousId,
                     );
               }
 
