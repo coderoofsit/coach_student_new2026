@@ -13,9 +13,11 @@ import '../view/Auth/parents/ParentsFrontScreen.dart';
 import '../view/Auth/parents/registation_parents.dart';
 import '../view/Auth/student/student_registation.dart';
 import '../view/Auth/EmailVerificationScreen.dart';
+import '../view/Auth/onboarding/onboarding_screen.dart';
 
 class AppRoutes {
   static const String splashOneScreen = '/splash_one_screen';
+  static const String onboardingScreen = '/onboarding_screen';
   // static const String selectCoachOrStudentScreen =
   //     '/select_coach_or_student_screen';
 
@@ -44,6 +46,7 @@ class AppRoutes {
 
   static Map<String, WidgetBuilder> routes = {
     splashOneScreen: (context) => const SplashOneScreen(),
+    onboardingScreen: (context) => const OnboardingScreen(),
     // HomeNewUserTwoTabContainerPage(),
     selectCoachOrStudentOneScreen: (context) =>
         const SelectCoachOrStudentOneScreen(),

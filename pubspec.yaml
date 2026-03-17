@@ -90,6 +90,7 @@ flutter:
   assets:
     - assets/
     - assets/images/
+    - assets/images/welcome_image.jpg
   # fonts:
   #   - family: Noto Sans
   #     fonts:

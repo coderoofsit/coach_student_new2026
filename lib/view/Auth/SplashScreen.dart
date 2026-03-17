@@ -48,10 +48,13 @@ class _SplashOneScreenState extends State<SplashOneScreen> {
         switch (userType) {
           case Utils.coachType:
             Navigator.popUntil(context, (route) => route.isFirst);
-            Navigator.pushNamedAndRemoveUntil(
-                context, AppRoutes.coachBottomNavBar, (route) => false);
-
-            // (context, AppRoutes.coachBottomNavBar);
+            if (SharedPreferencesManager.getIsOnboardingComplete()) {
+              Navigator.pushNamedAndRemoveUntil(
+                  context, AppRoutes.coachBottomNavBar, (route) => false);
+            } else {
+              Navigator.pushNamedAndRemoveUntil(
+                  context, AppRoutes.onboardingScreen, (route) => false);
+            }
             break;
           case Utils.studentType:
             Navigator.popUntil(context, (route) => route.isFirst);

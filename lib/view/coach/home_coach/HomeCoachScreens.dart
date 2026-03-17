@@ -61,6 +61,14 @@ class _HomeCoachScreensConsumerState extends ConsumerState<HomeCoachScreens> {
     initMediaQueary(context);
     return SafeArea(
       child: Scaffold(
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
+            Navigator.pushNamed(context, AppRoutes.onboardingScreen);
+          },
+          label: const Text('Debug Onboarding'),
+          icon: const Icon(Icons.bug_report),
+          backgroundColor: Colors.redAccent,
+        ),
         body: RefreshIndicator(
           onRefresh: () async {
             await ref

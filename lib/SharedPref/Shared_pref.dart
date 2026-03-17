@@ -143,4 +143,12 @@ class SharedPreferencesManager {
   static void clearPref() {
     _prefs.clear();
   }
+  
+  static void setIsOnboardingComplete(bool value) {
+    _prefs.setBool("isOnboardingComplete", value);
+  }
+
+  static bool getIsOnboardingComplete() {
+    return _prefs.getBool("isOnboardingComplete") ?? false;
+  }
 }

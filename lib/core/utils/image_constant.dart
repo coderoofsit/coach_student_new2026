@@ -254,6 +254,7 @@ class ImageConstant {
 
   static String imgWarning = '$imagePath/img_warning.svg';
   static String coach = '$imagePath/coach.svg';
+  static String welcomeImage = '$imagePath/welcome_image.jpg';
 }
 
 class ImageConstant1 {
