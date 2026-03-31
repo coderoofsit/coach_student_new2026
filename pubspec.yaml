@@ -65,7 +65,9 @@ dependencies:
   
   # Local IAP Wrapper
   iap_package:
-    path: ../In_app_purchase
+    git:
+      url: https://github.com/coderoofsit/In_app_purchase.git
+
 
 dev_dependencies:
   flutter_test:
