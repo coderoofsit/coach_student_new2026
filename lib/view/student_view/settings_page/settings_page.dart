@@ -23,7 +23,8 @@ import 'faq_screen/faq_screen.dart';
 import 'legal_policies_screen/legal_policies_screen.dart';
 import 'my_profile_student/my_profile_student.dart';
 import 'package:coach_student/core/app_export.dart';
-
+import 'package:coach_student/provider/iap_provider.dart';
+import 'package:iap_package/iap_package.dart';
 import 'package:coach_student/widgets/custom_text_form_field.dart';
 import 'package:flutter/material.dart';
 
@@ -135,7 +136,19 @@ class SettingsStudentPageState extends ConsumerState<SettingsStudentPage>
     // Load data when widget is built (i.e., when tab is opened)
     _loadDataIfNeeded();
     
+    // Listen for IAP updates
+    ref.listen(iapProvider, (previous, next) {
+      if (next.errorMessage != null && next.errorMessage != previous?.errorMessage) {
+        Utils.toast(message: next.errorMessage!);
+      }
+      if (next.latestPurchase?.status == PurchaseStatus.success && 
+          next.latestPurchase?.productId != previous?.latestPurchase?.productId) {
+        Utils.toast(message: "Purchase successful: ${next.latestPurchase!.productId}");
+      }
+    });
+
     final settingProvider = ref.watch(studentSettingProvider);
+    final iapState = ref.watch(iapProvider);
 
     mediaQueryData = MediaQuery.of(context);
 
@@ -336,7 +349,30 @@ class SettingsStudentPageState extends ConsumerState<SettingsStudentPage>
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    "Settings",
+                    "Store / Subscriptions",
+                    style: CustomTextStyles.titleLargeBlack900,
+                  ),
+                ),
+                SizedBox(height: 10.v),
+                if (iapState.isLoading)
+                  const Center(child: CircularProgressIndicator())
+                else if (iapState.products.isNotEmpty)
+                  ...iapState.products.map((product) => Column(
+                    children: [
+                      _buildIAPItem(context, product),
+                      SizedBox(height: 10.v),
+                    ],
+                  )).toList()
+                else
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 10),
+                    child: Text("No store items available at the moment."),
+                  ),
+                SizedBox(height: 19.v),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "General Settings",
                     style: CustomTextStyles.titleLargeBlack900,
                   ),
                 ),
@@ -823,6 +859,63 @@ class SettingsStudentPageState extends ConsumerState<SettingsStudentPage>
       borderDecoration: TextFormFieldStyleHelper.fillGray,
       filled: true,
       fillColor: appTheme.gray5001,
+    );
+  }
+
+  Widget _buildIAPItem(BuildContext context, ProductModel product) {
+    return GestureDetector(
+      onTap: () {
+        ref.read(iapProvider.notifier).buyProduct(product.id);
+      },
+      child: Container(
+        padding: EdgeInsets.all(10.h),
+        decoration: BoxDecoration(
+          color: appTheme.gray5001,
+          borderRadius: BorderRadiusStyle.roundedBorder5,
+        ),
+        child: Row(
+          children: [
+            Container(
+              height: 43.adaptSize,
+              width: 43.adaptSize,
+              decoration: BoxDecoration(
+                color: theme.primaryColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8.h),
+              ),
+              child: Icon(Icons.star_outline, color: theme.primaryColor),
+            ),
+            Padding(
+              padding: EdgeInsets.only(left: 19.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.title,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16.fSize,
+                      fontFamily: 'Nunito Sans',
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(height: 3.v),
+                  Text(
+                    product.price,
+                    style: TextStyle(
+                      color: theme.primaryColor,
+                      fontSize: 14.fSize,
+                      fontFamily: 'Nunito Sans',
+                      fontWeight: FontWeight.w800,
+                    ),
+                  )
+                ],
+              ),
+            ),
+            const Spacer(),
+            Icon(Icons.arrow_forward_ios, size: 16.v, color: Colors.grey),
+          ],
+        ),
+      ),
     );
   }
 }

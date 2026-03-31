@@ -62,6 +62,10 @@ dependencies:
   onepref: ^0.0.16
   firebase_crashlytics: ^4.1.5
   app_links: ^6.3.2
+  
+  # Local IAP Wrapper
+  iap_package:
+    path: ../In_app_purchase
 
 dev_dependencies:
   flutter_test:
