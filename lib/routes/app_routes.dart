@@ -12,10 +12,14 @@ import '../view/Auth/LoginScreen.dart';
 import '../view/Auth/parents/ParentsFrontScreen.dart';
 import '../view/Auth/parents/registation_parents.dart';
 import '../view/Auth/student/student_registation.dart';
+import '../view/Auth/onboarding_screen.dart';
 import '../view/Auth/EmailVerificationScreen.dart';
+
 
 class AppRoutes {
   static const String splashOneScreen = '/splash_one_screen';
+  static const String onboardingScreen = '/onboarding_screen';
+
   // static const String selectCoachOrStudentScreen =
   //     '/select_coach_or_student_screen';
 
@@ -43,7 +47,13 @@ class AppRoutes {
   static const String emailVerificationScreen = '/email_verification_screen';
 
   static Map<String, WidgetBuilder> routes = {
+    onboardingScreen: (context) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      return OnboardingScreen(initialPage: args?['initialPage'] ?? 0);
+    },
+
     splashOneScreen: (context) => const SplashOneScreen(),
+
     // HomeNewUserTwoTabContainerPage(),
     selectCoachOrStudentOneScreen: (context) =>
         const SelectCoachOrStudentOneScreen(),

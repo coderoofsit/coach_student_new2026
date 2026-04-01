@@ -5,7 +5,7 @@ import 'dart:developer' as dev;
 
 // --- Constants ---
 const Set<String> _kProductIds = {
-  'com.credit.one.month',
+  'test_product_id',
 };
 
 // --- Models ---

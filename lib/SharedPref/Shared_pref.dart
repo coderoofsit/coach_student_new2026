@@ -18,6 +18,10 @@ class SharedPreferencesManager {
   static const String _userKey = 'user';
   static const String parentStudentList = 'studentList';
   static const String notificationCount = 'notifcationCount';
+  static const String _onboardingKey = 'onboarding_completed';
+  static const String _pendingPurchaseKey = 'pending_onboarding_purchase';
+
+
 
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
@@ -143,4 +147,22 @@ class SharedPreferencesManager {
   static void clearPref() {
     _prefs.clear();
   }
+
+  static bool isOnboardingDone() {
+    return _prefs.getBool(_onboardingKey) ?? false;
+  }
+
+  static void setOnboardingDone(bool value) {
+    _prefs.setBool(_onboardingKey, value);
+  }
+
+  static bool isPendingOnboardingPurchase() {
+    return _prefs.getBool(_pendingPurchaseKey) ?? false;
+  }
+
+  static void setPendingOnboardingPurchase(bool value) {
+    _prefs.setBool(_pendingPurchaseKey, value);
+  }
 }
+
+

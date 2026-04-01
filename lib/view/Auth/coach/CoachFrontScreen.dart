@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:coach_student/core/app_export.dart';
 import 'package:coach_student/widgets/custom_elevated_button.dart';
 import 'package:coach_student/widgets/custom_outlined_button.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../SharedPref/Shared_pref.dart';
 import '../../../core/utils/utils.dart';
 
 class CoachAuthScreen extends StatelessWidget {
@@ -74,10 +76,14 @@ class CoachAuthScreen extends StatelessWidget {
               SizedBox(height: 25.v),
               CustomElevatedButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.registationScreen,
-                      arguments: {
-                        'userType': userType,
-                      });
+                  if (SharedPreferencesManager.isOnboardingDone()) {
+                    Navigator.pushNamed(context, AppRoutes.registationScreen,
+                        arguments: {
+                          'userType': userType,
+                        });
+                  } else {
+                    Navigator.pushNamed(context, AppRoutes.onboardingScreen);
+                  }
                 },
                 text: "Get started",
                 buttonStyle: CustomButtonStyles.fillOnErrorContainer,

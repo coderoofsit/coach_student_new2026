@@ -132,19 +132,24 @@ class AuthProvider extends ChangeNotifier {
         // Navigator.pushNamed(
         //   context,
 
-        SharedPreferencesManager.clearCoachProfile();
         CoachProfileDetailsModel coachProfileDetailsModel =
             CoachProfileDetailsModel.fromJson(result.response?.data['user']);
         SharedPreferencesManager.saveCoachProfile(coachProfileDetailsModel);
 
-
-
-        Navigator.popUntil(context, (route) => route.isFirst);
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => const CoachBottomNavbar()),
-            (route) => false);
+        if (SharedPreferencesManager.isPendingOnboardingPurchase()) {
+          SharedPreferencesManager.setPendingOnboardingPurchase(false);
+          Navigator.pushNamedAndRemoveUntil(
+              context, AppRoutes.onboardingScreen, (route) => false,
+              arguments: {'initialPage': 9});
+        } else {
+          Navigator.popUntil(context, (route) => route.isFirst);
+          Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const CoachBottomNavbar()),
+              (route) => false);
+        }
       }
+
 
     } else {
       log("reponse ${result.dioError?.message}");

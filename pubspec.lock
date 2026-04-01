@@ -795,9 +795,11 @@ packages:
   iap_package:
     dependency: "direct main"
     description:
-      path: "../In_app_purchase"
-      relative: true
-    source: path
+      path: "."
+      ref: HEAD
+      resolved-ref: "740a21564053399f6d63b58e12ef64b394abe8ea"
+      url: "https://github.com/coderoofsit/In_app_purchase.git"
+    source: git
     version: "0.0.1"
   image:
     dependency: transitive
