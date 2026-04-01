@@ -490,7 +490,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               final iap = ref.read(iapProvider.notifier);
 
               final productId = _selectedSubscription == 'Annual' 
-                  ? 'test_product_id'
+                  ? 'year_plan_test'
                   : 'test_product_id';
               
               await iap.buyProduct(productId, isConsumable: false);

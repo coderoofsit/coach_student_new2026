@@ -16,6 +16,7 @@ import 'change_password_screen/change_password_screen.dart';
 import 'contact_us_screen/contact_us_screen.dart';
 import 'delete_account_screen/delete_account_coach.dart';
 import 'my_profile_coach/my_profile_coach.dart';
+import 'manage_plans/manage_plans_screen.dart';
 import 'package:coach_student/core/app_export.dart';
 
 import 'package:coach_student/widgets/custom_text_form_field.dart';
@@ -60,6 +61,8 @@ class SettingsCoachPage extends StatelessWidget {
                             builder: (context) => const PayPalConnectScreen()));
                   },
                   child: _buildConnect(context),),
+              SizedBox(height: 15.v),
+              _buildManagePlans(context),
               SizedBox(height: 19.v),
               Align(
                 alignment: Alignment.centerLeft,
@@ -627,6 +630,41 @@ class SettingsCoachPage extends StatelessWidget {
           //   width: 25.adaptSize,
           // ),
           ),
+      prefixConstraints: BoxConstraints(
+        maxHeight: 50.v,
+      ),
+      contentPadding: EdgeInsets.only(
+        top: 12.v,
+        right: 30.h,
+        bottom: 12.v,
+      ),
+      borderDecoration: TextFormFieldStyleHelper.fillGray,
+      filled: true,
+      fillColor: appTheme.gray5001,
+    );
+  }
+
+  Widget _buildManagePlans(BuildContext context) {
+    return CustomTextFormField(
+      readOnly: true,
+      hintText: "Manage Subscription",
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const ManagePlansScreen(),
+          ),
+        );
+      },
+      hintStyle: CustomTextStyles.titleMediumBlack900SemiBold18,
+      prefix: Container(
+        margin: EdgeInsets.fromLTRB(16.h, 13.v, 11.h, 12.v),
+        child: Icon(
+          Icons.workspace_premium_outlined,
+          size: 25.adaptSize,
+          color: Colors.blueAccent,
+        ),
+      ),
       prefixConstraints: BoxConstraints(
         maxHeight: 50.v,
       ),
