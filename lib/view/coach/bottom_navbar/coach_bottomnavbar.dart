@@ -49,8 +49,8 @@ class _CoachBottomNavbarConsumerState extends ConsumerState<CoachBottomNavbar> {
 
 
   final List<String> _kProductIds = <String>[
-    "monthly",
-    "Monthly_Sub",
+    "test_product_id",
+    "year_plan_test",
   ];
 
   final InAppPurchaseService _iapService = InAppPurchaseService();
@@ -109,6 +109,10 @@ class _CoachBottomNavbarConsumerState extends ConsumerState<CoachBottomNavbar> {
 
 
   void _showSubscriptionDialog(BuildContext context) {
+    // Look up products by ID from the initialized service
+    final monthlyProduct = _iapService.products.where((p) => p.id == "test_product_id").firstOrNull;
+    final yearlyProduct = _iapService.products.where((p) => p.id == "year_plan_test").firstOrNull;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -125,25 +129,31 @@ class _CoachBottomNavbarConsumerState extends ConsumerState<CoachBottomNavbar> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              _buildSubscriptionOption(
-                context,
-                title: 'Monthly',
-                price: '₹990.00',
-                onTap: () {
-                  _iapService.buySubscription(_iapService.products.first);
-                  Navigator.of(context).pop();
-                },
-              ),
+              if (monthlyProduct != null)
+                _buildSubscriptionOption(
+                  context,
+                  title: 'Monthly',
+                  price: monthlyProduct.price,
+                  onTap: () {
+                    _iapService.buySubscription(monthlyProduct);
+                    Navigator.of(context).pop();
+                  },
+                )
+              else
+                const Text("Monthly Plan not available"),
               const SizedBox(height: 16),
-              _buildSubscriptionOption(
-                context,
-                title: 'Yearly',
-                price: '₹9990.00',
-                onTap: () {
-                  _iapService.buySubscription(_iapService.products.first);
-                  Navigator.of(context).pop();
-                },
-              ),
+              if (yearlyProduct != null)
+                _buildSubscriptionOption(
+                  context,
+                  title: 'Yearly',
+                  price: yearlyProduct.price,
+                  onTap: () {
+                    _iapService.buySubscription(yearlyProduct);
+                    Navigator.of(context).pop();
+                  },
+                )
+              else
+                const Text("Yearly Plan not available"),
             ],
           ),
           actions: <Widget>[

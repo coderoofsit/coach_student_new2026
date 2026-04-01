@@ -17,8 +17,7 @@ class InAppPurchaseService {
       return;
     }
 
-    const Set<String> _kIds = { "monthly",
-      "Monthly_Sub",'1month9d','com.inappTesting2344321.InappConsumable','','com.inappTesting2344321.NonConsumable','com.inappTesting2344321.yearly'};
+    const Set<String> _kIds = {"test_product_id", "year_plan_test"};
     final ProductDetailsResponse response = await _iap.queryProductDetails(_kIds);
     if (response.error != null) {
       // Handle error here
