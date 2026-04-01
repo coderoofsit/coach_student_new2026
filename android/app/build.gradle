@@ -38,8 +38,8 @@ android {
         minSdkVersion = flutter.minSdkVersion
         // Set targetSdk to 35 to match compileSdk and support BackEvent (API 35)
         targetSdk = 35
-        versionCode = 9
-        versionName = "1.7.0"
+        versionCode = 10
+        versionName = "1.8.0"
     }
     signingConfigs {
         release {
