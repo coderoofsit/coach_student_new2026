@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:coach_student/core/app_export.dart';
 import 'package:coach_student/models/CoachProfileDetailsModel.dart';
@@ -13,6 +14,7 @@ import 'package:gap/gap.dart';
 import '../../../core/constants/InAppServices.dart';
 import '../../../core/constants/consumable.dart';
 import '../../../provider/coach/coach_notification_provider.dart';
+import '../../../widgets/custom_elevated_button.dart';
 import '../../../widgets/custom_search_view.dart';
 import '../coach_chat/ChatScreensUserListCoach.dart';
 import '../home_coach/HomeCoachScreens.dart';
@@ -40,7 +42,8 @@ class CoachBottomNavbar extends ConsumerStatefulWidget {
       _CoachBottomNavbarConsumerState();
 }
 
-class _CoachBottomNavbarConsumerState extends ConsumerState<CoachBottomNavbar> {
+class _CoachBottomNavbarConsumerState extends ConsumerState<CoachBottomNavbar> 
+    with WidgetsBindingObserver {
   int currentPageIndex = 0;
 
   NavigationDestinationLabelBehavior labelBehavior =
@@ -48,163 +51,41 @@ class _CoachBottomNavbarConsumerState extends ConsumerState<CoachBottomNavbar> {
 
 
 
-  final List<String> _kProductIds = <String>[
-    "test_product_id",
-    "year_plan_test",
-  ];
-
-  final InAppPurchaseService _iapService = InAppPurchaseService();
   bool _loading = true;
-  String? _error;
 
 
 
   @override
-  void initState () {
-
-
+  void initState() {
     super.initState();
-    _initializeInAppPurchase();
-    // iApEngine.inAppPurchase.purchaseStream.listen((event) {
-    //   listenPurchasedActivities(event);
-    // });
-    //
-    // getProducts();
-    // WidgetsBinding.instance.addPostFrameCallback((timeStamp) async{
-    //
-    // });
-    // Future.delayed(Duration(seconds: 1)).then((_) {
-    //
-    // });
-  }
-
-
-
-  Future<bool> _verifyPurchase(PurchaseDetails purchaseDetails) {
-    // IMPORTANT!! Always verify a purchase before delivering the product.
-    // For the purpose of an example, we directly return true.
-    return Future<bool>.value(true);
-  }
-
-
-
-  Future<void> _initializeInAppPurchase() async {
-    try {
-      await _iapService.initialize();
-      _iapService.handlePurchaseUpdates();
-    } catch (e) {
-      setState(() {
-        _error = e.toString();
-      });
-    }
+    WidgetsBinding.instance.addObserver(this);
     setState(() {
       _loading = false;
     });
   }
 
-
-
-
-
-
-
-  void _showSubscriptionDialog(BuildContext context) {
-    // Look up products by ID from the initialized service
-    final monthlyProduct = _iapService.products.where((p) => p.id == "test_product_id").firstOrNull;
-    final yearlyProduct = _iapService.products.where((p) => p.id == "year_plan_test").firstOrNull;
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          title: const Text(
-            'Choose a subscription plan',
-            style: TextStyle(
-              fontSize: 16,
-            ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              if (monthlyProduct != null)
-                _buildSubscriptionOption(
-                  context,
-                  title: 'Monthly',
-                  price: monthlyProduct.price,
-                  onTap: () {
-                    _iapService.buySubscription(monthlyProduct);
-                    Navigator.of(context).pop();
-                  },
-                )
-              else
-                const Text("Monthly Plan not available"),
-              const SizedBox(height: 16),
-              if (yearlyProduct != null)
-                _buildSubscriptionOption(
-                  context,
-                  title: 'Yearly',
-                  price: yearlyProduct.price,
-                  onTap: () {
-                    _iapService.buySubscription(yearlyProduct);
-                    Navigator.of(context).pop();
-                  },
-                )
-              else
-                const Text("Yearly Plan not available"),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
-  Widget _buildSubscriptionOption(BuildContext context,
-      {required String title,
-      required String price,
-      required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.blueAccent,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Text(
-              title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              price,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      log("App resumed - refreshing coach profile to sync subscription status");
+      // Refresh the profile to catch any external subscription changes (cancellation/expiry)
+      ref.read(coachProfileProvider.notifier).getCoachProfile();
+    }
   }
+
+
+
+
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -213,6 +94,9 @@ class _CoachBottomNavbarConsumerState extends ConsumerState<CoachBottomNavbar> {
         notificationCoachProvider.select((value) => value.totalNotication));
     CoachProfileDetailsModel coachProfileDetailsModel = ref.watch(
         coachProfileProvider.select((value) => value.coachProfileDetailsModel));
+        
+    final bool hasAccess = coachProfileDetailsModel.hasAccess;
+
     return Scaffold(
       appBar: PreferredSize(
         preferredSize:
@@ -318,12 +202,21 @@ class _CoachBottomNavbarConsumerState extends ConsumerState<CoachBottomNavbar> {
           ),
         ),
       ),
-      body: [
-        const HomeCoachScreens(),
-        const ChatUserListCoach(),
-        const CoachWallet(),
-        const SettingsCoachPage(),
-      ][currentPageIndex],
+      body: Stack(
+        children: [
+          IndexedStack(
+            index: currentPageIndex,
+            children: const [
+              HomeCoachScreens(),
+              ChatUserListCoach(),
+              CoachWallet(),
+              SettingsCoachPage(),
+            ],
+          ),
+          if (!hasAccess)
+            _buildAccessRestrictedOverlay(context),
+        ],
+      ),
       // bottomNavigationBar: SizedBox(
       //   height:Platform.isIOS ? 110 : 75,
       //   child: BottomNavigationBar(
@@ -430,6 +323,70 @@ class _CoachBottomNavbarConsumerState extends ConsumerState<CoachBottomNavbar> {
           // controller: searchController,
           hintText: "Search for subject, coach...",
           borderDecoration: SearchViewStyleHelper.outlineBlack,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAccessRestrictedOverlay(BuildContext context) {
+    return Positioned.fill(
+      child: Container(
+        color: Colors.black.withOpacity(0.7),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 40.h),
+              child: Container(
+                padding: EdgeInsets.all(32.h),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24.h),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 20,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.lock_clock_outlined,
+                      size: 64.h,
+                      color: theme.colorScheme.primary,
+                    ),
+                    SizedBox(height: 24.v),
+                    Text(
+                      "Trial Period Over",
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: appTheme.black900,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 12.v),
+                    Text(
+                      "Your 14-day free access has ended. Subscribe now to continue managing your students and classes.",
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[700],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 32.v),
+                    CustomElevatedButton(
+                      text: "View Plans",
+                      onPressed: () {
+                        Navigator.pushNamed(context, AppRoutes.managePlansScreen);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );

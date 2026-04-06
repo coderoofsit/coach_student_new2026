@@ -22,6 +22,8 @@ class CoachProfileDetailsModel {
     this.verified,
     this.clients,
     this.createdAt,
+    this.isSubscribed,
+    this.activePlan,
   });
 
   final Image? image;
@@ -46,6 +48,8 @@ class CoachProfileDetailsModel {
   final bool? verified;
   final List<dynamic>? clients;
   final DateTime? createdAt;
+  final bool? isSubscribed;
+  final String? activePlan;
 
   CoachProfileDetailsModel copyWith({
     Image? image,
@@ -69,6 +73,8 @@ class CoachProfileDetailsModel {
     bool? verified,
     List<dynamic>? clients,
     DateTime? createdAt,
+    bool? isSubscribed,
+    String? activePlan,
   }) {
     return CoachProfileDetailsModel(
       image: image ?? this.image,
@@ -92,6 +98,8 @@ class CoachProfileDetailsModel {
       verified: verified ?? this.verified,
       clients: clients ?? this.clients,
       createdAt: createdAt ?? this.createdAt,
+      isSubscribed: isSubscribed ?? this.isSubscribed,
+      activePlan: activePlan ?? this.activePlan,
     );
   }
 
@@ -121,6 +129,8 @@ class CoachProfileDetailsModel {
           ? []
           : List<dynamic>.from(json["clients"]!.map((x) => x)),
       createdAt: DateTime.tryParse(json["createdAt"] ?? ""),
+      isSubscribed: json["isSubscribed"] ?? false,
+      activePlan: json["activePlan"] ?? "",
     );
   }
 
@@ -147,8 +157,19 @@ class CoachProfileDetailsModel {
         "timeZone": timeZone,
         "clients": clients?.map((x) => x).toList(),
         "createdAt": createdAt?.toIso8601String(),
+        "isSubscribed": isSubscribed,
+        "activePlan": activePlan,
       };
+
+  bool get isTrialActive {
+    if (createdAt == null) return true; // Assume new users have trial
+    final difference = DateTime.now().difference(createdAt!);
+    return difference.inDays <= 14;
+  }
+
+  bool get hasAccess => (isSubscribed ?? false) || isTrialActive;
 }
+
 
 class Image {
   Image({

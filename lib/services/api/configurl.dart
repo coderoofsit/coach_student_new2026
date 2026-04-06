@@ -97,4 +97,5 @@ abstract class ConfigUrl {
 
   // Backend-Driven PayPal Flow
   static String createPayPalOrder = "/payment/create-order";
+  static String verifySubscription = "/subscription/verify";
 }

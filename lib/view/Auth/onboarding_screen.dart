@@ -213,7 +213,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             text: "Start Setup",
             onPressed: _nextPage,
             buttonStyle: CustomButtonStyles.fillPrimaryTL8,
-            buttonTextStyle: CustomTextStyles.titleMediumBlack900_1,
+            buttonTextStyle: CustomTextStyles.titleMediumWhiteA700SemiBold_1,
           ),
           SizedBox(height: 8.v),
           Text(
@@ -410,7 +410,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           SizedBox(height: 8.v),
           Text(
             "Just \$99/year (\$8.25/month)",
-            style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+            style: theme.textTheme.bodySmall?.copyWith(color: appTheme.black900),
           ),
           SizedBox(height: 20.v),
         ],
@@ -433,7 +433,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   SharedPreferencesManager.setOnboardingDone(true);
                   if (SharedPreferencesManager.getToken().isEmpty) {
                     // If not logged in, request login first
-                    SharedPreferencesManager.setPendingOnboardingPurchase(true);
+                    // Note: We don't set PendingOnboardingPurchase here because they chose to SKIP.
                     Navigator.pushNamed(context, AppRoutes.loginScreen, arguments: {
                       'userType': Utils.coachType,
                     });
@@ -574,7 +574,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           Expanded(
             child: Text(
               text,
-              style: isLarge ? theme.textTheme.titleMedium : theme.textTheme.bodyLarge,
+              style: (isLarge ? theme.textTheme.titleMedium : theme.textTheme.bodyLarge)?.copyWith(
+                color: appTheme.black900,
+              ),
             ),
           ),
         ],
@@ -674,10 +676,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         title,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
+                          color: appTheme.black900,
                         ),
                       ),
                       SizedBox(height: 4.v),
-                      Text(subtitle, style: theme.textTheme.bodySmall),
+                      Text(subtitle, style: theme.textTheme.bodySmall?.copyWith(color: appTheme.black900)),
                     ],
                   ),
                 ),

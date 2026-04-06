@@ -14,6 +14,7 @@ import '../view/Auth/parents/registation_parents.dart';
 import '../view/Auth/student/student_registation.dart';
 import '../view/Auth/onboarding_screen.dart';
 import '../view/Auth/EmailVerificationScreen.dart';
+import '../view/coach/settings_page/manage_plans/manage_plans_screen.dart';
 
 
 class AppRoutes {
@@ -45,6 +46,7 @@ class AppRoutes {
   static const String registationScreen = '/register_screen';
   static const String forgotPasswordScreen = '/forgot_password_screen';
   static const String emailVerificationScreen = '/email_verification_screen';
+  static const String managePlansScreen = '/manage_plans_screen';
 
   static Map<String, WidgetBuilder> routes = {
     onboardingScreen: (context) {
@@ -151,6 +153,7 @@ class AppRoutes {
         userType: routes['userType'] ?? "",
       );
     },
+    managePlansScreen: (context) => const ManagePlansScreen(),
     coachBottomNavBar: (context) => const CoachBottomNavbar(),
   };
 }

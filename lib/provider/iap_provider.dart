@@ -2,6 +2,10 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iap_package/iap_package.dart';
 import 'dart:developer' as dev;
+import 'package:url_launcher/url_launcher.dart';
+import 'dart:io';
+import '../services/api/api_serivce_export.dart';
+import 'coach/coach_profile_provider.dart';
 
 // --- Constants ---
 const Set<String> _kProductIds = {
@@ -43,14 +47,15 @@ class IAPState {
 
 // --- Provider ---
 final iapProvider = StateNotifierProvider<IAPNotifier, IAPState>((ref) {
-  return IAPNotifier();
+  return IAPNotifier(ref);
 });
 
 class IAPNotifier extends StateNotifier<IAPState> {
+  final Ref _ref;
   final BillingManager _billingManager = BillingManager();
   StreamSubscription<PurchaseState>? _subscription;
 
-  IAPNotifier() : super(IAPState()) {
+  IAPNotifier(this._ref) : super(IAPState()) {
     _init();
   }
 
@@ -97,6 +102,8 @@ class IAPNotifier extends StateNotifier<IAPState> {
         if (purchaseState.originalPurchaseDetails != null) {
           await _billingManager.completePurchase(purchaseState.originalPurchaseDetails);
         }
+        // Sync with backend
+        _verifyWithBackend(purchaseState);
         break;
       case PurchaseStatus.error:
         dev.log("Purchase Error: ${purchaseState.productId} - ${purchaseState.error}");
@@ -129,6 +136,44 @@ class IAPNotifier extends StateNotifier<IAPState> {
       await _billingManager.restorePurchases();
     } catch (e) {
       state = state.copyWith(errorMessage: 'Restore failed: $e');
+    }
+  }
+
+  /// Verification with backend
+  Future<void> _verifyWithBackend(PurchaseState purchase) async {
+    try {
+      final data = {
+        'productId': purchase.productId,
+        'transactionId': purchase.originalPurchaseDetails?.purchaseID,
+        'verificationData': purchase.originalPurchaseDetails?.verificationData.serverVerificationData,
+        'platform': Platform.isAndroid ? 'android' : 'ios',
+      };
+
+      // Call the sync endpoint (using configured URL)
+      await DioApi.post(
+        path: ConfigUrl.verifySubscription,
+        data: data,
+      );
+
+      // Refresh the user profile to get the latest subscription status
+      await _ref.read(coachProfileProvider.notifier).getCoachProfile();
+      
+    } catch (e) {
+      dev.log("Backend Sync Error: $e");
+      // Note: We don't block the user if sync fails, but we log it.
+    }
+  }
+
+  /// Open OS-specific subscription management page
+  Future<void> openSubscriptionManagement() async {
+    final url = Platform.isAndroid
+        ? "https://play.google.com/store/account/subscriptions?package=com.credit.creditvault"
+        : "https://apps.apple.com/account/subscriptions";
+
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    } else {
+      state = state.copyWith(errorMessage: "Could not open store subscriptions page.");
     }
   }
 
