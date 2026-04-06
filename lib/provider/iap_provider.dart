@@ -149,18 +149,23 @@ class IAPNotifier extends StateNotifier<IAPState> {
         'platform': Platform.isAndroid ? 'android' : 'ios',
       };
 
-      // Call the sync endpoint (using configured URL)
-      await DioApi.post(
+      // Call the sync endpoint
+      final result = await DioApi.post(
         path: ConfigUrl.verifySubscription,
         data: data,
       );
 
-      // Refresh the user profile to get the latest subscription status
+      if (result.dioError?.response?.statusCode == 404) {
+        dev.log("Backend Sync: Subscription verification endpoint not yet implemented (404). Ready for backend update.");
+      } else if (result.dioError != null) {
+        dev.log("Backend Sync Error: ${result.dioError?.message}");
+      }
+      
+      // Always refresh the user profile to catch any updates that DO exist
       await _ref.read(coachProfileProvider.notifier).getCoachProfile();
       
     } catch (e) {
-      dev.log("Backend Sync Error: $e");
-      // Note: We don't block the user if sync fails, but we log it.
+      dev.log("Sync Exception: $e");
     }
   }
 

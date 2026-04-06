@@ -8,6 +8,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import '../../SharedPref/Shared_pref.dart';
+import '../../core/utils/utils.dart';
 import '../../view/Auth/SplashScreen.dart';
 import '../../widgets/dialogs.dart';
 import 'configurl.dart';
@@ -69,8 +70,11 @@ class Result {
       if (error is SocketException) {
         Dialogs.errorDialog(context, 'Failed to connect to $appName servers.');
         return;
-      } else if (error is TimeoutException) {
-        Dialogs.errorDialog(context, 'Request timed out. Try again.');
+      } else if (error is TimeoutException || 
+                 dioError!.type == DioExceptionType.connectionTimeout ||
+                 dioError!.type == DioExceptionType.sendTimeout ||
+                 dioError!.type == DioExceptionType.receiveTimeout) {
+        Utils.showSnackbarErrror(context, 'something went wrong retry');
         return;
       }
       

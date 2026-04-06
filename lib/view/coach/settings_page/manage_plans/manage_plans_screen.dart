@@ -55,95 +55,97 @@ class _ManagePlansScreenState extends ConsumerState<ManagePlansScreen> {
         elevation: 0,
         iconTheme: IconThemeData(color: theme.colorScheme.onSurface),
       ),
-      body: Stack(
-        children: [
-          Padding(
-            padding: EdgeInsets.all(24.h),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(height: 20.v),
-                Text(
-                  isSubscribed ? "Your Subscription" : "Choose Your Plan",
-                  style: theme.textTheme.headlineLarge,
-                ),
-                if (isSubscribed && activePlanName.isNotEmpty) ...[
-                  SizedBox(height: 8.v),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12.h, vertical: 4.v),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20.h),
-                    ),
-                    child: Text(
-                      "Active: $activePlanName Plan",
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.bold,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Padding(
+              padding: EdgeInsets.all(24.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(height: 20.v),
+                  Text(
+                    isSubscribed ? "Your Subscription" : "Choose Your Plan",
+                    style: theme.textTheme.headlineLarge,
+                  ),
+                  if (isSubscribed && activePlanName.isNotEmpty) ...[
+                    SizedBox(height: 8.v),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12.h, vertical: 4.v),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20.h),
+                      ),
+                      child: Text(
+                        "Active: $activePlanName Plan",
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
+                  ],
+                  SizedBox(height: 32.v),
+                  _buildSubscriptionTile(
+                    ref: ref,
+                    title: "Monthly",
+                    price: "\$12.99",
+                    subtitle: "Flexible billing",
+                    isSelected: selectedPlan == 'Monthly',
+                    isActive: activePlanId == 'test_product_id',
+                    onTap: () => ref.read(_selectedPlanProvider.notifier).state = 'Monthly',
                   ),
-                ],
-                SizedBox(height: 32.v),
-                _buildSubscriptionTile(
-                  ref: ref,
-                  title: "Monthly",
-                  price: "\$12.99",
-                  subtitle: "Flexible billing",
-                  isSelected: selectedPlan == 'Monthly',
-                  isActive: activePlanId == 'test_product_id',
-                  onTap: () => ref.read(_selectedPlanProvider.notifier).state = 'Monthly',
-                ),
-                SizedBox(height: 16.v),
-                _buildSubscriptionTile(
-                  ref: ref,
-                  title: "Annual ⭐ Best Value",
-                  price: "\$99/year",
-                  subtitle: "\$8.25/month • 14 day FREE trial",
-                  extra: "Save \$56 per year",
-                  isSelected: selectedPlan == 'Annual',
-                  isActive: activePlanId == 'year_plan_test',
-                  isBestValue: true,
-                  onTap: () => ref.read(_selectedPlanProvider.notifier).state = 'Annual',
-                ),
-                const Spacer(),
-                
-                // Restore Purchases Button
-                TextButton.icon(
-                  onPressed: () => ref.read(iapProvider.notifier).restore(),
-                  icon: const Icon(Icons.restore),
-                  label: const Text("Restore Purchases"),
-                ),
-                SizedBox(height: 12.v),
-                
-                // Conditional Cancel Subscription Button
-                if (isSubscribed) ...[
-                  CustomOutlinedButton(
-                    text: "Cancel Subscription",
-                    onPressed: () => ref.read(iapProvider.notifier).openSubscriptionManagement(),
-                    buttonStyle: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.red),
-                    ),
-                    buttonTextStyle: const TextStyle(color: Colors.red),
+                  SizedBox(height: 16.v),
+                  _buildSubscriptionTile(
+                    ref: ref,
+                    title: "Annual ⭐ Best Value",
+                    price: "\$99/year",
+                    subtitle: "\$8.25/month • 14 day FREE trial",
+                    extra: "Save \$56 per year",
+                    isSelected: selectedPlan == 'Annual',
+                    isActive: activePlanId == 'year_plan_test',
+                    isBestValue: true,
+                    onTap: () => ref.read(_selectedPlanProvider.notifier).state = 'Annual',
+                  ),
+                  const Spacer(),
+                  
+                  // Restore Purchases Button
+                  TextButton.icon(
+                    onPressed: () => ref.read(iapProvider.notifier).restore(),
+                    icon: const Icon(Icons.restore),
+                    label: const Text("Restore Purchases"),
                   ),
                   SizedBox(height: 12.v),
+                  
+                  // Conditional Cancel Subscription Button
+                  if (isSubscribed) ...[
+                    CustomOutlinedButton(
+                      text: "Cancel Subscription",
+                      onPressed: () => ref.read(iapProvider.notifier).openSubscriptionManagement(),
+                      buttonStyle: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.red),
+                      ),
+                      buttonTextStyle: const TextStyle(color: Colors.red),
+                    ),
+                    SizedBox(height: 12.v),
+                  ],
+      
+                  // Main Action Button
+                  _buildMainActionButton(ref, selectedPlan, activePlanId, isSubscribed),
+                  
+                  SizedBox(height: 20.v),
                 ],
-
-                // Main Action Button
-                _buildMainActionButton(ref, selectedPlan, activePlanId, isSubscribed),
-                
-                SizedBox(height: 20.v),
-              ],
-            ),
-          ),
-          if (iapState.isLoading || profileState.isLoadingProfile)
-            Container(
-              color: Colors.black26,
-              child: const Center(
-                child: CircularProgressIndicator(),
               ),
             ),
-        ],
+            if (iapState.isLoading || profileState.isLoadingProfile)
+              Container(
+                color: Colors.black26,
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -203,7 +205,10 @@ class _ManagePlansScreenState extends ConsumerState<ManagePlansScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8.h,
+                        runSpacing: 4.v,
                         children: [
                           Text(
                             title,
@@ -212,8 +217,7 @@ class _ManagePlansScreenState extends ConsumerState<ManagePlansScreen> {
                               color: appTheme.black900,
                             ),
                           ),
-                          if (isActive) ...[
-                            SizedBox(width: 8.h),
+                          if (isActive)
                             Container(
                               padding: EdgeInsets.symmetric(horizontal: 6.h, vertical: 2.v),
                               decoration: BoxDecoration(
@@ -229,7 +233,6 @@ class _ManagePlansScreenState extends ConsumerState<ManagePlansScreen> {
                                 ),
                               ),
                             ),
-                          ],
                         ],
                       ),
                       SizedBox(height: 4.v),
