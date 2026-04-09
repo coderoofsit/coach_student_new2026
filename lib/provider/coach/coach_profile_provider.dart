@@ -11,68 +11,46 @@ import '../../services/api/dio.dart';
 
 class CoachProfileNotifier extends ChangeNotifier {
   CoachProfileNotifier() {
+    // 1. Initially load from cache so the user sees their profile immediately (offline support/speed)
+    final cachedData = SharedPreferencesManager.getCoachProfile();
+    if (cachedData != null) {
+      coachProfileDetailsModel = cachedData;
+    }
+    // 2. Immediately fetch the fresh status from the backend
     getCoachProfile();
   }
+
   CoachProfileDetailsModel coachProfileDetailsModel =
       CoachProfileDetailsModel();
   bool isLoadingProfile = false;
+
   Future<void> getCoachProfile() async {
     isLoadingProfile = true;
     notifyListeners();
-    final getCoachProfileData = SharedPreferencesManager.getCoachProfile();
-    if (getCoachProfileData != null) {
-      coachProfileDetailsModel = getCoachProfileData;
-      log("===========================================");
-      log("Account Info Data (from SharedPreferences):");
-      log("Name: ${getCoachProfileData.name}");
-      log("Email: ${getCoachProfileData.email}");
-      log("Full Profile: ${getCoachProfileData.toString()}");
-      log("===========================================");
+
+    // Print the API request URL
+    log("===========================================");
+    log("Account Info API Request (FORCED REFRESH):");
+    log("URL: ${ConfigUrl.baseUrl}${ConfigUrl.cachProfileGet}");
+    log("Method: GET");
+    log("===========================================");
+    
+    Result result = await DioApi.get(path: ConfigUrl.cachProfileGet);
+    
+    if (result.response != null) {
+      coachProfileDetailsModel =
+          CoachProfileDetailsModel.fromJson(result.response?.data);
+      
+      // Update cache with the fresh data from server
+      SharedPreferencesManager.clearCoachProfile();
+      SharedPreferencesManager.saveCoachProfile(coachProfileDetailsModel);
+      
       isLoadingProfile = false;
       notifyListeners();
     } else {
-      // Print the API request URL
-      log("===========================================");
-      log("Account Info API Request:");
-      log("URL: ${ConfigUrl.baseUrl}${ConfigUrl.cachProfileGet}");
-      log("Method: GET");
-      log("Endpoint: ${ConfigUrl.cachProfileGet}");
-      log("===========================================");
-      
-      Result result = await DioApi.get(path: ConfigUrl.cachProfileGet);
-      
-      // Print the full API response
-      log("===========================================");
-      log("Account Info API Response:");
-      log("Status Code: ${result.response?.statusCode}");
-      log("Response Data: ${result.response?.data}");
-      log("Full Response: ${result.response}");
-      log("===========================================");
-      
-      if (result.response != null) {
-        // Print parsed data
-        log("===========================================");
-        log("Parsed Coach Profile Data:");
-        log("Name: ${result.response?.data['name']}");
-        log("Email: ${result.response?.data['email']}");
-        log("Full Parsed Model: ${CoachProfileDetailsModel.fromJson(result.response?.data)}");
-        log("===========================================");
-        
-        coachProfileDetailsModel =
-            CoachProfileDetailsModel.fromJson(result.response?.data);
-        SharedPreferencesManager.clearCoachProfile();
-        SharedPreferencesManager.saveCoachProfile(coachProfileDetailsModel);
-        isLoadingProfile = false;
-        notifyListeners();
-      } else {
-        log("===========================================");
-        log("Account Info API Error:");
-        log("DioError: ${result.dioError}");
-        log("Error Message: ${result.dioError?.message}");
-        log("Error Response: ${result.dioError?.response?.data}");
-        log("Status Code: ${result.dioError?.response?.statusCode}");
-        log("===========================================");
-      }
+      log("Account Info API Error: ${result.dioError?.message}");
+      isLoadingProfile = false;
+      notifyListeners();
     }
   }
 }

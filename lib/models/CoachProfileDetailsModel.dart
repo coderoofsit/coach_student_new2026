@@ -24,6 +24,7 @@ class CoachProfileDetailsModel {
     this.createdAt,
     this.isSubscribed,
     this.activePlan,
+    this.hasAccess = false,
   });
 
   final Image? image;
@@ -50,6 +51,7 @@ class CoachProfileDetailsModel {
   final DateTime? createdAt;
   final bool? isSubscribed;
   final String? activePlan;
+  final bool hasAccess;
 
   CoachProfileDetailsModel copyWith({
     Image? image,
@@ -75,6 +77,7 @@ class CoachProfileDetailsModel {
     DateTime? createdAt,
     bool? isSubscribed,
     String? activePlan,
+    bool? hasAccess,
   }) {
     return CoachProfileDetailsModel(
       image: image ?? this.image,
@@ -100,6 +103,7 @@ class CoachProfileDetailsModel {
       createdAt: createdAt ?? this.createdAt,
       isSubscribed: isSubscribed ?? this.isSubscribed,
       activePlan: activePlan ?? this.activePlan,
+      hasAccess: hasAccess ?? this.hasAccess,
     );
   }
 
@@ -131,6 +135,7 @@ class CoachProfileDetailsModel {
       createdAt: DateTime.tryParse(json["createdAt"] ?? ""),
       isSubscribed: json["isSubscribed"] ?? false,
       activePlan: json["activePlan"] ?? "",
+      hasAccess: json["hasAccess"] ?? false,
     );
   }
 
@@ -159,15 +164,17 @@ class CoachProfileDetailsModel {
         "createdAt": createdAt?.toIso8601String(),
         "isSubscribed": isSubscribed,
         "activePlan": activePlan,
+        "hasAccess": hasAccess,
       };
 
-  bool get isTrialActive {
-    if (createdAt == null) return true; // Assume new users have trial
-    final difference = DateTime.now().difference(createdAt!);
-    return difference.inDays <= 14;
-  }
+  // The access status is now managed by the backend
+  // bool get isTrialActive {
+  //   if (createdAt == null) return true; // Assume new users have trial
+  //   final difference = DateTime.now().difference(createdAt!);
+  //   return difference.inDays <= 14;
+  // }
 
-  bool get hasAccess => (isSubscribed ?? false) || isTrialActive;
+  // bool get hasAccess => (isSubscribed ?? false) || isTrialActive;
 }
 
 

@@ -52,6 +52,7 @@ class _CoachBottomNavbarConsumerState extends ConsumerState<CoachBottomNavbar>
 
 
   bool _loading = true;
+  Timer? _statusCheckTimer;
 
 
 
@@ -62,10 +63,24 @@ class _CoachBottomNavbarConsumerState extends ConsumerState<CoachBottomNavbar>
     setState(() {
       _loading = false;
     });
+    
+    // Start periodic background check for subscription/trial status (every 15 minutes)
+    _startstatusCheckTimer();
+  }
+
+  void _startstatusCheckTimer() {
+    _statusCheckTimer?.cancel();
+    _statusCheckTimer = Timer.periodic(const Duration(minutes: 15), (timer) {
+      log("Periodic Check - refreshing coach profile status");
+      // Use ref.read to interact with notifier without rebuilding this method itself
+      // The overall widget will rebuild if the notifier emits a change
+      ref.read(coachProfileProvider.notifier).getCoachProfile();
+    });
   }
 
   @override
   void dispose() {
+    _statusCheckTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -73,8 +88,8 @@ class _CoachBottomNavbarConsumerState extends ConsumerState<CoachBottomNavbar>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      log("App resumed - refreshing coach profile to sync subscription status");
-      // Refresh the profile to catch any external subscription changes (cancellation/expiry)
+      log("App resumed - force refreshing coach profile to sync subscription status from server");
+      // Force refresh the profile to bypass SharedPreferences and catch external subscription changes
       ref.read(coachProfileProvider.notifier).getCoachProfile();
     }
   }
@@ -213,7 +228,7 @@ class _CoachBottomNavbarConsumerState extends ConsumerState<CoachBottomNavbar>
               SettingsCoachPage(),
             ],
           ),
-          if (!hasAccess)
+          if (!hasAccess && currentPageIndex != 3)
             _buildAccessRestrictedOverlay(context),
         ],
       ),
