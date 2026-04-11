@@ -9,7 +9,8 @@ import 'coach/coach_profile_provider.dart';
 
 // --- Constants ---
 const Set<String> _kProductIds = {
-  'test_product_id',
+  'Monthly_Sub',
+  'yearly_sub',
 };
 
 // --- Models ---
@@ -62,11 +63,16 @@ class IAPNotifier extends StateNotifier<IAPState> {
   Future<void> _init() async {
     state = state.copyWith(isLoading: true);
     try {
+      dev.log('IAP: Initializing with IDs: $_kProductIds');
       // 1. Initialize the BillingManager
       await _billingManager.init(_kProductIds);
 
       // 2. Load available products
       final products = await _billingManager.getProducts();
+      dev.log('IAP: Found ${products.length} products');
+      for (var p in products) {
+        dev.log('IAP: Product loaded - ${p.id}: ${p.title} (${p.price})');
+      }
 
       // 3. Keep state updated
       state = state.copyWith(
@@ -81,7 +87,7 @@ class IAPNotifier extends StateNotifier<IAPState> {
       dev.log('IAP Initialization Error: $e');
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'Failed to initialize store: $e',
+        errorMessage: 'Failed to initialize store. Please check your internet connection and store configuration.',
       );
     }
   }
@@ -107,7 +113,7 @@ class IAPNotifier extends StateNotifier<IAPState> {
         break;
       case PurchaseStatus.error:
         dev.log("Purchase Error: ${purchaseState.productId} - ${purchaseState.error}");
-        state = state.copyWith(errorMessage: purchaseState.error);
+        state = state.copyWith(errorMessage: _getFriendlyErrorMessage(purchaseState.error ?? "Purchase failed"));
         break;
       case PurchaseStatus.cancelled:
         dev.log("Purchase Cancelled: ${purchaseState.productId}");
@@ -116,16 +122,18 @@ class IAPNotifier extends StateNotifier<IAPState> {
   }
 
   /// Start a purchase flow
-  Future<void> buyProduct(String productId, {bool isConsumable = true}) async {
+  Future<void> buyProduct(String productId, {bool isConsumable = false}) async {
     if (!state.isInitialized) {
       state = state.copyWith(errorMessage: "Store not initialized");
       return;
     }
     
     try {
+      dev.log("IAP: Starting purchase for $productId (consumable: $isConsumable)");
       await _billingManager.purchase(productId, isConsumable: isConsumable);
     } catch (e) {
-      state = state.copyWith(errorMessage: 'Purchase request failed: $e');
+      dev.log("IAP: Purchase request failed: $e");
+      state = state.copyWith(errorMessage: _getFriendlyErrorMessage(e));
     }
   }
 
@@ -142,12 +150,17 @@ class IAPNotifier extends StateNotifier<IAPState> {
   /// Verification with backend
   Future<void> _verifyWithBackend(PurchaseState purchase) async {
     try {
+      final String? serverData = purchase.originalPurchaseDetails?.verificationData.serverVerificationData;
+      
       final data = {
         'productId': purchase.productId,
-        'transactionId': purchase.originalPurchaseDetails?.purchaseID,
-        'verificationData': purchase.originalPurchaseDetails?.verificationData.serverVerificationData,
+        'purchaseToken': serverData, // Backend expects purchaseToken for Android and receiptData for iOS
+        'receiptData': Platform.isIOS ? serverData : null,
+        'packageName': "com.credit.creditvault", // Target package name
         'platform': Platform.isAndroid ? 'android' : 'ios',
       };
+
+      dev.log("IAP: Verifying with backend: ${purchase.productId} on ${data['platform']}");
 
       // Call the sync endpoint
       final result = await DioApi.post(
@@ -180,6 +193,27 @@ class IAPNotifier extends StateNotifier<IAPState> {
     } else {
       state = state.copyWith(errorMessage: "Could not open store subscriptions page.");
     }
+  }
+
+  /// Map technical errors to user-friendly messages
+  String _getFriendlyErrorMessage(Object error) {
+    final errorStr = error.toString();
+    
+    // Check for StoreKit duplicate transaction error
+    if (errorStr.contains('storekit_duplicate_product_object')) {
+      return "Please wait, restoring previous plans or checking plans...";
+    }
+    
+    // Clean up other PlatformException technical strings
+    if (errorStr.startsWith('PlatformException(')) {
+      // Extract only the message part if possible
+      final parts = errorStr.split(',');
+      if (parts.length > 1) {
+        return parts[1].trim();
+      }
+    }
+    
+    return errorStr.replaceFirst('Exception: ', '').replaceFirst('Purchase request failed: ', '');
   }
 
   @override

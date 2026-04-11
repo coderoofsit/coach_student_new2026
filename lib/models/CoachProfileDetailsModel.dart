@@ -25,6 +25,8 @@ class CoachProfileDetailsModel {
     this.isSubscribed,
     this.activePlan,
     this.hasAccess = false,
+    this.accessReason,
+    this.trialExpiryDate,
   });
 
   final Image? image;
@@ -52,6 +54,8 @@ class CoachProfileDetailsModel {
   final bool? isSubscribed;
   final String? activePlan;
   final bool hasAccess;
+  final String? accessReason;
+  final DateTime? trialExpiryDate;
 
   CoachProfileDetailsModel copyWith({
     Image? image,
@@ -78,6 +82,8 @@ class CoachProfileDetailsModel {
     bool? isSubscribed,
     String? activePlan,
     bool? hasAccess,
+    String? accessReason,
+    DateTime? trialExpiryDate,
   }) {
     return CoachProfileDetailsModel(
       image: image ?? this.image,
@@ -104,6 +110,8 @@ class CoachProfileDetailsModel {
       isSubscribed: isSubscribed ?? this.isSubscribed,
       activePlan: activePlan ?? this.activePlan,
       hasAccess: hasAccess ?? this.hasAccess,
+      accessReason: accessReason ?? this.accessReason,
+      trialExpiryDate: trialExpiryDate ?? this.trialExpiryDate,
     );
   }
 
@@ -136,6 +144,8 @@ class CoachProfileDetailsModel {
       isSubscribed: json["isSubscribed"] ?? false,
       activePlan: json["activePlan"] ?? "",
       hasAccess: json["hasAccess"] ?? false,
+      accessReason: json["accessReason"],
+      trialExpiryDate: json["trialExpiryDate"] == null ? null : DateTime.tryParse(json["trialExpiryDate"]),
     );
   }
 
@@ -165,7 +175,16 @@ class CoachProfileDetailsModel {
         "isSubscribed": isSubscribed,
         "activePlan": activePlan,
         "hasAccess": hasAccess,
+        "accessReason": accessReason,
+        "trialExpiryDate": trialExpiryDate?.toIso8601String(),
       };
+
+  int get trialDaysLeft {
+    if (trialExpiryDate == null) return 0;
+    final now = DateTime.now();
+    if (trialExpiryDate!.isBefore(now)) return 0;
+    return trialExpiryDate!.difference(now).inDays;
+  }
 
   // The access status is now managed by the backend
   // bool get isTrialActive {

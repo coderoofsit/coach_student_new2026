@@ -45,8 +45,20 @@ class _ManagePlansScreenState extends ConsumerState<ManagePlansScreen> {
 
     // Map plan IDs to readable names for the active plan display
     String activePlanName = "";
-    if (activePlanId == 'year_plan_test') activePlanName = "Annual";
-    else if (activePlanId == 'test_product_id') activePlanName = "Monthly";
+    if (activePlanId == 'yearly_sub') activePlanName = "Annual";
+    else if (activePlanId == 'Monthly_Sub') activePlanName = "Monthly";
+
+    // Listen for IAP errors
+    ref.listen<IAPState>(iapProvider, (previous, next) {
+      if (next.errorMessage != null && next.errorMessage != previous?.errorMessage) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.errorMessage!),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -68,6 +80,40 @@ class _ManagePlansScreenState extends ConsumerState<ManagePlansScreen> {
                     isSubscribed ? "Your Subscription" : "Choose Your Plan",
                     style: theme.textTheme.headlineLarge,
                   ),
+                  if (coachProfile.accessReason == 'trial') ...[
+                    SizedBox(height: 12.v),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 8.v),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12.h),
+                        border: Border.all(color: Colors.amber.withOpacity(0.5)),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.timer_outlined, color: Colors.amber[800], size: 20.h),
+                              SizedBox(width: 8.h),
+                              Text(
+                                "Free Trial: ${coachProfile.trialDaysLeft} days left",
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  color: Colors.amber[900],
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 4.v),
+                          Text(
+                            "Get full access to all features",
+                            style: theme.textTheme.bodySmall?.copyWith(color: Colors.amber[900]),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   if (isSubscribed && activePlanName.isNotEmpty) ...[
                     SizedBox(height: 8.v),
                     Container(
@@ -92,7 +138,7 @@ class _ManagePlansScreenState extends ConsumerState<ManagePlansScreen> {
                     price: "\$12.99",
                     subtitle: "Flexible billing",
                     isSelected: selectedPlan == 'Monthly',
-                    isActive: activePlanId == 'test_product_id',
+                    isActive: activePlanId == 'Monthly_Sub',
                     onTap: () => ref.read(_selectedPlanProvider.notifier).state = 'Monthly',
                   ),
                   SizedBox(height: 16.v),
@@ -103,7 +149,7 @@ class _ManagePlansScreenState extends ConsumerState<ManagePlansScreen> {
                     subtitle: "\$8.25/month • 14 day FREE trial",
                     extra: "Save \$56 per year",
                     isSelected: selectedPlan == 'Annual',
-                    isActive: activePlanId == 'year_plan_test',
+                    isActive: activePlanId == 'yearly_sub',
                     isBestValue: true,
                     onTap: () => ref.read(_selectedPlanProvider.notifier).state = 'Annual',
                   ),
@@ -151,7 +197,7 @@ class _ManagePlansScreenState extends ConsumerState<ManagePlansScreen> {
   }
 
   Widget _buildMainActionButton(WidgetRef ref, String selectedPlan, String? activePlanId, bool isSubscribed) {
-    final String selectedProductId = selectedPlan == 'Annual' ? 'year_plan_test' : 'test_product_id';
+    final String selectedProductId = selectedPlan == 'Annual' ? 'yearly_sub' : 'Monthly_Sub';
     final bool isSelectedPlanActive = activePlanId == selectedProductId;
 
     if (isSelectedPlanActive) {

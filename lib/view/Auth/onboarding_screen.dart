@@ -5,6 +5,7 @@ import '../../core/app_export.dart';
 import '../../core/utils/utils.dart';
 import '../../provider/iap_provider.dart';
 
+import 'package:iap_package/iap_package.dart';
 import '../../widgets/custom_elevated_button.dart';
 import '../../widgets/custom_icon_button.dart';
 import '../../widgets/custom_outlined_button.dart';
@@ -94,6 +95,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Listen for IAP errors or success
+    ref.listen<IAPState>(iapProvider, (previous, next) {
+      if (next.errorMessage != null && next.errorMessage != previous?.errorMessage) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.errorMessage!),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } else if (next.latestPurchase?.status == PurchaseStatus.success &&
+          previous?.latestPurchase?.status != PurchaseStatus.success) {
+        // On success during onboarding
+        SharedPreferencesManager.setOnboardingDone(true);
+        Navigator.pushReplacementNamed(context, AppRoutes.coachBottomNavBar,
+            arguments: {'userType': Utils.coachType});
+      }
+    });
+
     return Scaffold(
       backgroundColor: theme.colorScheme.onPrimaryContainer.withOpacity(0.02),
       body: SafeArea(
@@ -487,24 +506,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               }
 
 
-              final iap = ref.read(iapProvider.notifier);
+               final iap = ref.read(iapProvider.notifier);
 
               final productId = _selectedSubscription == 'Annual' 
-                  ? 'year_plan_test'
-                  : 'test_product_id';
+                  ? 'yearly_sub'
+                  : 'Monthly_Sub';
               
               await iap.buyProduct(productId, isConsumable: false);
               
-              if (mounted && ref.read(iapProvider).errorMessage != null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(ref.read(iapProvider).errorMessage!)),
-                );
-              } else if (mounted) {
-                // On success
-                SharedPreferencesManager.setOnboardingDone(true);
-                Navigator.pushReplacementNamed(context, AppRoutes.coachBottomNavBar,
-                    arguments: {'userType': Utils.coachType});
-              }
+              // Note: We don't need explicit state checks here because ref.listen handles it
             },
           ),
 
