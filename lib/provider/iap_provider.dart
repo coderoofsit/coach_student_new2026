@@ -113,10 +113,14 @@ class IAPNotifier extends StateNotifier<IAPState> {
         break;
       case PurchaseStatus.error:
         dev.log("Purchase Error: ${purchaseState.productId} - ${purchaseState.error}");
-        state = state.copyWith(errorMessage: _getFriendlyErrorMessage(purchaseState.error ?? "Purchase failed"));
+        state = state.copyWith(
+          errorMessage: _getFriendlyErrorMessage(purchaseState.error ?? "Purchase failed"),
+          isLoading: false,
+        );
         break;
       case PurchaseStatus.cancelled:
         dev.log("Purchase Cancelled: ${purchaseState.productId}");
+        state = state.copyWith(isLoading: false);
         break;
     }
   }
@@ -128,22 +132,37 @@ class IAPNotifier extends StateNotifier<IAPState> {
       return;
     }
     
+    if (state.isLoading) return; // Prevent concurrent actions
+    
     try {
       dev.log("IAP: Starting purchase for $productId (consumable: $isConsumable)");
+      state = state.copyWith(isLoading: true, errorMessage: null);
       await _billingManager.purchase(productId, isConsumable: isConsumable);
     } catch (e) {
       dev.log("IAP: Purchase request failed: $e");
-      state = state.copyWith(errorMessage: _getFriendlyErrorMessage(e));
+      final String errorMsg = _getFriendlyErrorMessage(e);
+      state = state.copyWith(errorMessage: errorMsg, isLoading: false);
+      
+      // If we hit a duplicate transaction error, attempt to clear the queue by restoring
+      if (e.toString().contains('storekit_duplicate_product_object')) {
+        dev.log("IAP: Duplicate transaction detected. Attempting to clear queue via restore...");
+        state = state.copyWith(errorMessage: "Synchronizing store transactions. Please try again in a moment.", isLoading: true);
+        await restore(); 
+      }
     }
   }
 
   /// Restore past purchases (especially for non-consumables/subscriptions)
   Future<void> restore() async {
-    if (!state.isInitialized) return;
+    if (!state.isInitialized || state.isLoading) return;
     try {
+      state = state.copyWith(isLoading: true, errorMessage: null);
       await _billingManager.restorePurchases();
+      // Restore typically doesn't trigger the purchase stream if nothing is found, 
+      // so we set loading to false after a short delay or after the call completes
+      state = state.copyWith(isLoading: false);
     } catch (e) {
-      state = state.copyWith(errorMessage: 'Restore failed: $e');
+      state = state.copyWith(errorMessage: 'Restore failed: $e', isLoading: false);
     }
   }
 
@@ -177,8 +196,12 @@ class IAPNotifier extends StateNotifier<IAPState> {
       // Always refresh the user profile to catch any updates that DO exist
       await _ref.read(coachProfileProvider.notifier).getCoachProfile();
       
+      // Stop loading after verification is done
+      state = state.copyWith(isLoading: false);
+      
     } catch (e) {
       dev.log("Sync Exception: $e");
+      state = state.copyWith(isLoading: false);
     }
   }
 

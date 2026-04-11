@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:coach_student/core/app_export.dart';
 import 'package:coach_student/provider/iap_provider.dart';
@@ -66,6 +67,7 @@ class _ManagePlansScreenState extends ConsumerState<ManagePlansScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: IconThemeData(color: theme.colorScheme.onSurface),
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
       body: SafeArea(
         child: Stack(
@@ -157,7 +159,7 @@ class _ManagePlansScreenState extends ConsumerState<ManagePlansScreen> {
                   
                   // Restore Purchases Button
                   TextButton.icon(
-                    onPressed: () => ref.read(iapProvider.notifier).restore(),
+                    onPressed: iapState.isLoading ? null : () => ref.read(iapProvider.notifier).restore(),
                     icon: const Icon(Icons.restore),
                     label: const Text("Restore Purchases"),
                   ),
@@ -197,6 +199,7 @@ class _ManagePlansScreenState extends ConsumerState<ManagePlansScreen> {
   }
 
   Widget _buildMainActionButton(WidgetRef ref, String selectedPlan, String? activePlanId, bool isSubscribed) {
+    final iapState = ref.watch(iapProvider);
     final String selectedProductId = selectedPlan == 'Annual' ? 'yearly_sub' : 'Monthly_Sub';
     final bool isSelectedPlanActive = activePlanId == selectedProductId;
 
@@ -210,12 +213,16 @@ class _ManagePlansScreenState extends ConsumerState<ManagePlansScreen> {
       );
     }
 
+    final String buttonText = isSubscribed ? "Change to $selectedPlan" : (selectedPlan == 'Annual' ? "Start 14-Day Free Trial" : "Subscribe Now");
+
     return CustomElevatedButton(
-      text: isSubscribed ? "Change to $selectedPlan" : (selectedPlan == 'Annual' ? "Start 14-Day Free Trial" : "Subscribe Now"),
-      onPressed: () async {
-        final iap = ref.read(iapProvider.notifier);
-        await iap.buyProduct(selectedProductId, isConsumable: false);
-      },
+      text: buttonText,
+      onPressed: iapState.isLoading 
+        ? null 
+        : () async {
+            final iap = ref.read(iapProvider.notifier);
+            await iap.buyProduct(selectedProductId, isConsumable: false);
+          },
     );
   }
 
