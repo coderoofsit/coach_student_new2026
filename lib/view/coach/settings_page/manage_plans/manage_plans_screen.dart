@@ -133,21 +133,27 @@ class _ManagePlansScreenState extends ConsumerState<ManagePlansScreen> {
                   _buildSubscriptionTile(
                     ref: ref,
                     title: "Monthly",
-                    price: "\$12.99",
+                    price: iapState.products.any((p) => p.id == 'Monthly_Sub') 
+                        ? iapState.products.firstWhere((p) => p.id == 'Monthly_Sub').price 
+                        : "\$12.99",
                     subtitle: "Flexible billing",
                     isSelected: selectedPlan == 'Monthly',
-                    isActive: activePlanId == 'Monthly_Sub',
+                    isActive: isSubscribed && activePlanId == 'Monthly_Sub',
                     onTap: () => ref.read(_selectedPlanProvider.notifier).state = 'Monthly',
                   ),
                   SizedBox(height: 16.v),
                   _buildSubscriptionTile(
                     ref: ref,
                     title: "Annual ⭐ Best Value",
-                    price: "\$99/year",
-                    subtitle: "\$8.25/month • 14 day FREE trial",
-                    extra: "Save \$56 per year",
+                    price: iapState.products.any((p) => p.id == 'yearly_sub') 
+                        ? iapState.products.firstWhere((p) => p.id == 'yearly_sub').price 
+                        : "\$99/year",
+                    subtitle: iapState.products.any((p) => p.id == 'yearly_sub')
+                        ? "${iapState.products.firstWhere((p) => p.id == 'yearly_sub').price}/year • 14 day FREE trial"
+                        : "\$99/year • 14 day FREE trial",
+                    extra: "Save with annual billing",
                     isSelected: selectedPlan == 'Annual',
-                    isActive: activePlanId == 'yearly_sub',
+                    isActive: isSubscribed && activePlanId == 'yearly_sub',
                     isBestValue: true,
                     onTap: () => ref.read(_selectedPlanProvider.notifier).state = 'Annual',
                   ),
