@@ -27,6 +27,7 @@ class CoachProfileDetailsModel {
     this.hasAccess = false,
     this.accessReason,
     this.trialExpiryDate,
+    this.subscriptionExpiryDate,
   });
 
   final Image? image;
@@ -56,6 +57,7 @@ class CoachProfileDetailsModel {
   final bool hasAccess;
   final String? accessReason;
   final DateTime? trialExpiryDate;
+  final DateTime? subscriptionExpiryDate;
 
   CoachProfileDetailsModel copyWith({
     Image? image,
@@ -84,6 +86,7 @@ class CoachProfileDetailsModel {
     bool? hasAccess,
     String? accessReason,
     DateTime? trialExpiryDate,
+    DateTime? subscriptionExpiryDate,
   }) {
     return CoachProfileDetailsModel(
       image: image ?? this.image,
@@ -112,6 +115,7 @@ class CoachProfileDetailsModel {
       hasAccess: hasAccess ?? this.hasAccess,
       accessReason: accessReason ?? this.accessReason,
       trialExpiryDate: trialExpiryDate ?? this.trialExpiryDate,
+      subscriptionExpiryDate: subscriptionExpiryDate ?? this.subscriptionExpiryDate,
     );
   }
 
@@ -146,6 +150,7 @@ class CoachProfileDetailsModel {
       hasAccess: json["hasAccess"] ?? false,
       accessReason: json["accessReason"],
       trialExpiryDate: json["trialExpiryDate"] == null ? null : DateTime.tryParse(json["trialExpiryDate"]),
+      subscriptionExpiryDate: json["subscriptionExpiryDate"] == null ? null : DateTime.tryParse(json["subscriptionExpiryDate"]),
     );
   }
 
@@ -177,6 +182,7 @@ class CoachProfileDetailsModel {
         "hasAccess": hasAccess,
         "accessReason": accessReason,
         "trialExpiryDate": trialExpiryDate?.toIso8601String(),
+        "subscriptionExpiryDate": subscriptionExpiryDate?.toIso8601String(),
       };
 
   int get trialDaysLeft {
@@ -184,6 +190,13 @@ class CoachProfileDetailsModel {
     final now = DateTime.now();
     if (trialExpiryDate!.isBefore(now)) return 0;
     return trialExpiryDate!.difference(now).inDays;
+  }
+
+  int get subscriptionDaysLeft {
+    if (subscriptionExpiryDate == null) return 0;
+    final now = DateTime.now();
+    if (subscriptionExpiryDate!.isBefore(now)) return 0;
+    return subscriptionExpiryDate!.difference(now).inDays;
   }
 
   // The access status is now managed by the backend
