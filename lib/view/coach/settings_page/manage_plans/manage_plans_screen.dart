@@ -35,14 +35,10 @@ class _ManagePlansScreenState extends ConsumerState<ManagePlansScreen> {
     
     final coachProfile = profileState.coachProfileDetailsModel;
     
-    // Check backend first, fallback to local IAP state for immediate feedback
+    // Source of Truth: Backend profile data only. 
+    // Fallback to local state was causing "ghost" subscriptions from stale local transactions.
     bool isSubscribed = coachProfile.isSubscribed ?? false;
     String? activePlanId = coachProfile.activePlan;
-    
-    if (!isSubscribed && iapState.latestPurchase?.status == PurchaseStatus.success) {
-      isSubscribed = true;
-      activePlanId = iapState.latestPurchase?.productId;
-    }
 
     // Map plan IDs to readable names for the active plan display
     String activePlanName = "";

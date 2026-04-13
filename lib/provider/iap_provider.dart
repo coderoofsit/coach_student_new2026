@@ -196,8 +196,8 @@ class IAPNotifier extends StateNotifier<IAPState> {
       // Always refresh the user profile to catch any updates that DO exist
       await _ref.read(coachProfileProvider.notifier).getCoachProfile();
       
-      // Stop loading after verification is done
-      state = state.copyWith(isLoading: false);
+      // Sync with backend Done, safe to clear local temporary state
+      state = state.copyWith(isLoading: false, latestPurchase: null);
       
     } catch (e) {
       dev.log("Sync Exception: $e");
