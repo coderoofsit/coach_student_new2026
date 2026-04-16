@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "855705674848",
-    "project_id": "coachus-1269c",
-    "storage_bucket": "coachus-1269c.firebasestorage.app"
+    "project_number": "571073838031",
+    "project_id": "credit-vault-dc626",
+    "storage_bucket": "credit-vault-dc626.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:855705674848:android:6ffe83b1d90b6235808f05",
+        "mobilesdk_app_id": "1:571073838031:android:5b4d8098c7e7caaf2eb0ba",
         "android_client_info": {
           "package_name": "com.credit.creditvault"
         }
@@ -15,26 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDYr04kwCflotWwlE-CNhRyUIOCblsbx5s"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:855705674848:android:031fdeb3c5100301808f05",
-        "android_client_info": {
-          "package_name": "com.example.coach_student"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDYr04kwCflotWwlE-CNhRyUIOCblsbx5s"
+          "current_key": "AIzaSyDjPfQlMJHHQPN_BQHnw-Cf56I_EZ7YORo"
         }
       ],
       "services": {
