@@ -76,7 +76,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   String? _selectedPainPoint;
   String? _selectedClientCount;
   String? _selectedSessionCost;
-  String _selectedSubscription = 'Annual';
+
+
 
   void _nextPage() {
     if (_currentPage < 9) {
@@ -96,6 +97,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     // Listen for IAP errors or success
+
+
     ref.listen<IAPState>(iapProvider, (previous, next) {
       if (next.errorMessage != null && next.errorMessage != previous?.errorMessage) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -439,7 +442,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   // --- Screen 10: Paywall ---
   Widget _buildPaywall() {
+    final selectedSubscription = ref.watch(selectedPlanProvider);
     return Padding(
+
       padding: EdgeInsets.all(24.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -479,8 +484,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             title: "Monthly",
             price: "\$12.99",
             subtitle: "No free trial",
-            isSelected: _selectedSubscription == 'Monthly',
-            onTap: () => setState(() => _selectedSubscription = 'Monthly'),
+            isSelected: selectedSubscription == 'Monthly',
+            onTap: () => ref.read(selectedPlanProvider.notifier).state = 'Monthly',
           ),
           SizedBox(height: 16.v),
           _buildSubscriptionTile(
@@ -488,13 +493,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             price: "\$99/year",
             subtitle: "\$8.25/month • 14 day FREE trial",
             extra: "Save \$56 per year",
-            isSelected: _selectedSubscription == 'Annual',
+            isSelected: selectedSubscription == 'Annual',
             isBestValue: true,
-            onTap: () => setState(() => _selectedSubscription = 'Annual'),
+            onTap: () => ref.read(selectedPlanProvider.notifier).state = 'Annual',
           ),
           const Spacer(),
           CustomElevatedButton(
-            text: _selectedSubscription == 'Annual' ? "Start 14-Day Free Trial" : "Subscribe Now",
+            text: selectedSubscription == 'Annual' ? "Start 14-Day Free Trial" : "Subscribe Now",
             onPressed: () async {
               if (SharedPreferencesManager.getToken().isEmpty) {
                 // If not logged in, request login first
@@ -508,11 +513,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
                final iap = ref.read(iapProvider.notifier);
 
-              final productId = _selectedSubscription == 'Annual' 
-                  ? 'yearly_sub'
-                  : 'Monthly_Sub';
+              final productId = selectedSubscription == 'Annual' 
+                  ? yearlyProductId
+                  : monthlyProductId;
               
               await iap.buyProduct(productId, isConsumable: false);
+
               
               // Note: We don't need explicit state checks here because ref.listen handles it
             },

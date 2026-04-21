@@ -13,23 +13,6 @@ import 'package:iap_package/iap_package.dart';
 final _selectedPlanProvider =
 StateProvider.autoDispose<String>((ref) => 'Annual');
 
-// ---------------------------------------------------------------------------
-// Cross-platform product ID helpers (top-level so they can be used anywhere)
-// ---------------------------------------------------------------------------
-String get monthlyProductId =>
-    Platform.isAndroid ? 'google_play_monthly_plan' : 'Monthly_Sub';
-
-String get yearlyProductId =>
-    Platform.isAndroid ? 'google_play_yearly_plan' : 'yearly_sub';
-
-/// Returns the human-readable plan name for a given product ID,
-/// regardless of platform.
-String planNameFromId(String? id) {
-  if (id == null) return '';
-  if (id == monthlyProductId) return 'Monthly';
-  if (id == yearlyProductId) return 'Annual';
-  return '';
-}
 
 // ---------------------------------------------------------------------------
 

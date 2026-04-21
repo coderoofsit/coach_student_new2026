@@ -11,7 +11,31 @@ import 'coach/coach_profile_provider.dart';
 const Set<String> _kProductIds = {
   'Monthly_Sub',
   'yearly_sub',
+  'google_play_monthly_plan',
+  'google_play_yearly_plan',
 };
+
+// ---------------------------------------------------------------------------
+// Cross-platform product ID helpers
+// ---------------------------------------------------------------------------
+String get monthlyProductId =>
+    Platform.isAndroid ? 'google_play_monthly_plan' : 'Monthly_Sub';
+
+String get yearlyProductId =>
+    Platform.isAndroid ? 'google_play_yearly_plan' : 'yearly_sub';
+
+/// Returns the human-readable plan name for a given product ID,
+/// regardless of platform.
+String planNameFromId(String? id) {
+  if (id == null) return '';
+  if (id == monthlyProductId) return 'Monthly';
+  if (id == yearlyProductId) return 'Annual';
+  return '';
+}
+
+// Provider for the UI to track which plan is selected during purchase flows
+final selectedPlanProvider = StateProvider<String>((ref) => 'Annual');
+
 
 // --- Models ---
 class IAPState {
