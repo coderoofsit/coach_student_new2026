@@ -9,6 +9,7 @@ import 'package:iap_package/iap_package.dart';
 import '../../widgets/custom_elevated_button.dart';
 import '../../widgets/custom_icon_button.dart';
 import '../../widgets/custom_outlined_button.dart';
+import '../../widgets/custom_text_form_field.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   final int initialPage;
@@ -48,6 +49,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     'Phone notes',
     'I try to remember',
     'I don\'t track them',
+    'I use another app',
   ];
 
   final List<String> _painPointOptions = [
@@ -76,6 +78,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   String? _selectedPainPoint;
   String? _selectedClientCount;
   String? _selectedSessionCost;
+
+  final TextEditingController _otherAppController = TextEditingController();
+
+  @override
+  void dispose() {
+    _otherAppController.dispose();
+    super.dispose();
+  }
 
 
 
@@ -232,7 +242,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           const Spacer(),
           CustomElevatedButton(
-            text: "Start Setup",
+            text: "Continue",
             onPressed: _nextPage,
             buttonStyle: CustomButtonStyles.fillPrimaryTL8,
             buttonTextStyle: CustomTextStyles.titleMediumWhiteA700SemiBold_1,
@@ -271,16 +281,30 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return _buildQuestionScreen(
       title: "How do you track sessions today?",
       helperText: "Most freelancers lose money because sessions are hard to track manually.",
-      options: _trackingOptions.map((opt) {
-        return _buildSelectableTile(
-          title: opt,
-          isSelected: _selectedTracking == opt,
-          onTap: () {
-            setState(() => _selectedTracking = opt);
-            _nextPage();
-          },
-        );
-      }).toList(),
+      options: [
+        ..._trackingOptions.map((opt) {
+          return _buildSelectableTile(
+            title: opt,
+            isSelected: _selectedTracking == opt,
+            onTap: () {
+              setState(() => _selectedTracking = opt);
+              if (opt != 'I use another app') {
+                _nextPage();
+              }
+            },
+          );
+        }),
+        if (_selectedTracking == 'I use another app')
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 8.v),
+            child: CustomTextFormField(
+              controller: _otherAppController,
+              hintText: "Which app do you use?",
+              textInputAction: TextInputAction.done,
+              onFieldSubmitted: (_) => _nextPage(),
+            ),
+          ),
+      ],
     );
   }
 
@@ -340,6 +364,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   // --- Screen 7: Summary ---
   Widget _buildSummaryScreen() {
+    String adaptiveAmount = _selectedSessionCost ?? "40";
+
     return Padding(
       padding: EdgeInsets.all(24.h),
       child: Column(
@@ -347,7 +373,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         children: [
           SizedBox(height: 40.v),
           Text(
-            "One forgotten session could cost you \$40+",
+            "One forgotten session could cost you \$$adaptiveAmount+",
             style: theme.textTheme.headlineLarge,
           ),
           SizedBox(height: 32.v),
@@ -361,17 +387,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           _buildCheckItem("Avoid awkward payment reminders"),
           _buildCheckItem("Never lose track of sessions again"),
           const Spacer(),
-          CustomElevatedButton(
-            text: "Start My Free 14-Day Trial",
-            onPressed: _nextPage,
-          ),
-          SizedBox(height: 12.v),
           Center(
             child: Text(
               "Most freelancers recover the cost of CreditVault after preventing just one missed session.",
-              style: theme.textTheme.bodySmall,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                fontSize: 18.fSize,
+                color: Colors.black,
+              ),
               textAlign: TextAlign.center,
             ),
+          ),
+          SizedBox(height: 16.v),
+          CustomElevatedButton(
+            text: "Continue",
+            onPressed: _nextPage,
           ),
           SizedBox(height: 20.v),
         ],
@@ -424,6 +454,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           _buildCheckItem("No surprises.", isLarge: true),
           _buildCheckItem("Cancel anytime.", isLarge: true),
           _buildCheckItem("No credit card required for the 14-day trial", isLarge: true),
+          SizedBox(height: 24.v),
+          Text(
+            "Avoiding just one missed session can save more than the cost of CreditVault.",
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: 18.fSize,
+              color: Colors.black,
+            ),
+            textAlign: TextAlign.center,
+          ),
           const Spacer(),
           CustomElevatedButton(
             text: "Continue for Free",
@@ -432,7 +472,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           SizedBox(height: 8.v),
           Text(
             "Just \$99/year (\$8.25/month)",
-            style: theme.textTheme.bodySmall?.copyWith(color: appTheme.black900),
+            style: theme.textTheme.bodySmall?.copyWith(color: Colors.black),
           ),
           SizedBox(height: 20.v),
         ],
@@ -591,7 +631,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             child: Text(
               text,
               style: (isLarge ? theme.textTheme.titleMedium : theme.textTheme.bodyLarge)?.copyWith(
-                color: appTheme.black900,
+                color: Colors.black,
               ),
             ),
           ),
@@ -692,11 +732,29 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         title,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: appTheme.black900,
+                          color: Colors.black,
                         ),
                       ),
-                      SizedBox(height: 4.v),
-                      Text(subtitle, style: theme.textTheme.bodySmall?.copyWith(color: appTheme.black900)),
+                      SizedBox(height: 8.v),
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: subtitle.split('•').first,
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                color: Colors.black,
+                                fontWeight: isBestValue ? FontWeight.bold : FontWeight.normal,
+                                fontSize: isBestValue ? 16.fSize : 14.fSize,
+                              ),
+                            ),
+                            if (subtitle.contains('•'))
+                              TextSpan(
+                                text: " • ${subtitle.split('•').last}",
+                                style: theme.textTheme.bodySmall?.copyWith(color: Colors.black),
+                              ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -704,24 +762,28 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   price,
                   style: theme.textTheme.headlineSmall?.copyWith(
                     color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
             if (extra != null) ...[
-              SizedBox(height: 12.v),
+              SizedBox(height: 16.v),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.h, vertical: 4.v),
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(horizontal: 12.h, vertical: 8.v),
                 decoration: BoxDecoration(
                   color: Colors.green.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8.h),
                 ),
                 child: Text(
                   extra,
-                  style: theme.textTheme.bodySmall?.copyWith(
+                  style: theme.textTheme.titleMedium?.copyWith(
                     color: Colors.green,
                     fontWeight: FontWeight.bold,
+                    fontSize: 16.fSize,
                   ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ],

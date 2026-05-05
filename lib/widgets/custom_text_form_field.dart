@@ -30,7 +30,8 @@ class CustomTextFormField extends StatelessWidget {
       this.onChanged
       , 
       this.textCapitalization ,
-        this.maxLength
+        this.maxLength,
+        this.onFieldSubmitted
       }
       
       )
@@ -82,6 +83,7 @@ class CustomTextFormField extends StatelessWidget {
   final FormFieldValidator<String>? validator;
   final void Function(PointerDownEvent)? onTapOutside;
  final TextCapitalization? textCapitalization ;
+  final void Function(String)? onFieldSubmitted;
   @override
   Widget build(BuildContext context) {
     return alignment != null
@@ -117,6 +119,7 @@ class CustomTextFormField extends StatelessWidget {
           maxLines: maxLines ?? 1,
           decoration: decoration,
           validator: validator,
+          onFieldSubmitted: onFieldSubmitted,
         ),
       );
   InputDecoration get decoration => InputDecoration(
