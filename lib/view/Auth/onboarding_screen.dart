@@ -122,8 +122,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         // On success during onboarding
         SharedPreferencesManager.setOnboardingDone(true);
         // Route to Registration Screen (Point 9)
-        Navigator.pushNamed(context, AppRoutes.registationScreen,
-            arguments: {'userType': Utils.coachType});
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.registationScreen,
+          (route) => route.settings.name == AppRoutes.coachAuthScreen,
+          arguments: {'userType': Utils.coachType},
+        );
       }
     });
 
