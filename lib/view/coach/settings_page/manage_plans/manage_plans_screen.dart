@@ -84,11 +84,12 @@ class _ManagePlansScreenState extends ConsumerState<ManagePlansScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            Padding(
-              padding: EdgeInsets.all(24.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
+            SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.all(24.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
                   SizedBox(height: 20.v),
                   Text(
                     isSubscribed ? "Your Subscription" : "Choose Your Plan",
@@ -206,7 +207,7 @@ class _ManagePlansScreenState extends ConsumerState<ManagePlansScreen> {
                     'Annual',
                   ),
 
-                  const Spacer(),
+                  SizedBox(height: 32.v),
 
                   // --- Restore Purchases ---
                   TextButton.icon(
@@ -281,6 +282,7 @@ class _ManagePlansScreenState extends ConsumerState<ManagePlansScreen> {
                 ],
               ),
             ),
+          ),
 
             // Loading overlay
             if (iapState.isLoading || profileState.isLoadingProfile)
