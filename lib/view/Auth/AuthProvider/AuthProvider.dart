@@ -15,12 +15,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../models/CoachProfileDetailsModel.dart';
 import '../../../routes/app_routes.dart';
+import 'package:coach_student/provider/iap_provider.dart';
 import '../../../widgets/dialogs.dart';
 import '../parents/ChildFormWidget.dart';
 import '../parents/ChildSignUp.dart';
 import '../EmailVerificationScreen.dart';
 
 class AuthProvider extends ChangeNotifier {
+  final Ref _ref;
+  AuthProvider(this._ref);
   List<StudentModel> listStudentModel = [StudentModel()];
 
   List<StudentForm> listStudentForm = [StudentForm()];
@@ -77,6 +80,9 @@ class AuthProvider extends ChangeNotifier {
       if (result.response != null) {
         SharedPreferencesManager.setUserType(userTpe: userType);
         SharedPreferencesManager.setToken(token: result.response?.data['token']);
+
+        // Sync any pending purchases made during onboarding (Point 9)
+        _ref.read(iapProvider.notifier).syncPendingPurchases();
 
         // Fetch a fresh FCM token after login and sync it to the backend
         final notificationServices = NotificationServices();
@@ -589,5 +595,5 @@ Future<void> studentFcmToken({
 
 
 final authNotifier = ChangeNotifierProvider<AuthProvider>((ref) {
-  return AuthProvider();
+  return AuthProvider(ref);
 });

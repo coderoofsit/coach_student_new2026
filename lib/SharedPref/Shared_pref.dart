@@ -20,6 +20,8 @@ class SharedPreferencesManager {
   static const String notificationCount = 'notifcationCount';
   static const String _onboardingKey = 'onboarding_completed';
   static const String _pendingPurchaseKey = 'pending_onboarding_purchase';
+  static const String _pendingPurchaseToken = 'pending_purchase_token';
+  static const String _pendingPurchaseProductId = 'pending_purchase_product_id';
 
 
 
@@ -162,6 +164,25 @@ class SharedPreferencesManager {
 
   static void setPendingOnboardingPurchase(bool value) {
     _prefs.setBool(_pendingPurchaseKey, value);
+  }
+
+  static void setPendingPurchase({required String token, required String productId}) {
+    _prefs.setString(_pendingPurchaseToken, token);
+    _prefs.setString(_pendingPurchaseProductId, productId);
+  }
+
+  static Map<String, String>? getPendingPurchase() {
+    final token = _prefs.getString(_pendingPurchaseToken);
+    final productId = _prefs.getString(_pendingPurchaseProductId);
+    if (token != null && productId != null) {
+      return {'token': token, 'productId': productId};
+    }
+    return null;
+  }
+
+  static void clearPendingPurchase() {
+    _prefs.remove(_pendingPurchaseToken);
+    _prefs.remove(_pendingPurchaseProductId);
   }
 }
 

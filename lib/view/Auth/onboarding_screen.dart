@@ -121,7 +121,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           previous?.latestPurchase?.status != PurchaseStatus.success) {
         // On success during onboarding
         SharedPreferencesManager.setOnboardingDone(true);
-        Navigator.pushReplacementNamed(context, AppRoutes.coachBottomNavBar,
+        // Route to Registration Screen (Point 9)
+        Navigator.pushNamed(context, AppRoutes.registationScreen,
             arguments: {'userType': Utils.coachType});
       }
     });
@@ -495,19 +496,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               TextButton(
                 onPressed: () {
                   SharedPreferencesManager.setOnboardingDone(true);
-                  if (SharedPreferencesManager.getToken().isEmpty) {
-                    // If not logged in, request login first
-                    // Note: We don't set PendingOnboardingPurchase here because they chose to SKIP.
-                    Navigator.pushNamed(context, AppRoutes.loginScreen, arguments: {
-                      'userType': Utils.coachType,
-                    });
-                    return;
-                  }
-                  else{
-                    SharedPreferencesManager.setOnboardingDone(true);
-                    Navigator.pushReplacementNamed(context, AppRoutes.coachBottomNavBar,
-                        arguments: {'userType': Utils.coachType});
-                  }
+                  // Pop back to Welcome Coach screen first, then push login (Point 9)
+                  Navigator.popUntil(context, (route) => route.settings.name == AppRoutes.coachAuthScreen);
+                  Navigator.pushNamed(context, AppRoutes.loginScreen, arguments: {
+                    'userType': Utils.coachType,
+                  });
                 },
                 child: Text("Skip", style: theme.textTheme.bodyMedium),
               ),
@@ -541,30 +534,29 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           CustomElevatedButton(
             text: selectedSubscription == 'Annual' ? "Start 14-Day Free Trial" : "Subscribe Now",
             onPressed: () async {
-              if (SharedPreferencesManager.getToken().isEmpty) {
-                // If not logged in, request login first
-                SharedPreferencesManager.setPendingOnboardingPurchase(true);
-                Navigator.pushNamed(context, AppRoutes.loginScreen, arguments: {
-                  'userType': Utils.coachType,
-                });
-                return;
-              }
-
-
                final iap = ref.read(iapProvider.notifier);
 
-              final productId = selectedSubscription == 'Annual' 
+               final productId = selectedSubscription == 'Annual' 
                   ? yearlyProductId
                   : monthlyProductId;
               
               await iap.buyProduct(productId, isConsumable: false);
-
-              
-              // Note: We don't need explicit state checks here because ref.listen handles it
             },
           ),
-
-
+          SizedBox(height: 12.v),
+          Center(
+            child: TextButton(
+              onPressed: () => ref.read(iapProvider.notifier).restore(),
+              child: Text(
+                "Restore Purchases",
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  decoration: TextDecoration.underline,
+                  color: Colors.black,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
           SizedBox(height: 20.v),
         ],
       ),

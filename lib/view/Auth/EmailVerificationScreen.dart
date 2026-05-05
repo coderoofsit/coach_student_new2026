@@ -177,9 +177,10 @@ class _EmailVerificationScreenState
               SizedBox(height: 20.v),
               TextButton(
                 onPressed: () {
-                  Navigator.pushReplacementNamed(
+                  Navigator.pushNamedAndRemoveUntil(
                     context,
                     AppRoutes.loginScreen,
+                    (route) => route.settings.name == AppRoutes.coachAuthScreen,
                     arguments: {'userType': widget.userType},
                   );
                 },

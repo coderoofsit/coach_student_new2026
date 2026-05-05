@@ -4,6 +4,7 @@ import 'package:iap_package/iap_package.dart';
 import 'dart:developer' as dev;
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
+import '../SharedPref/Shared_pref.dart';
 import '../services/api/api_serivce_export.dart';
 import 'coach/coach_profile_provider.dart';
 
@@ -132,6 +133,14 @@ class IAPNotifier extends StateNotifier<IAPState> {
         if (purchaseState.originalPurchaseDetails != null) {
           await _billingManager.completePurchase(purchaseState.originalPurchaseDetails);
         }
+        // Save locally in case user is not logged in yet (e.g. registration flow)
+        if (purchaseState.originalPurchaseDetails != null) {
+           final token = purchaseState.originalPurchaseDetails!.verificationData.serverVerificationData;
+           SharedPreferencesManager.setPendingPurchase(
+             token: token, 
+             productId: purchaseState.productId ?? ""
+           );
+        }
         // Sync with backend
         _verifyWithBackend(purchaseState);
         break;
@@ -211,7 +220,10 @@ class IAPNotifier extends StateNotifier<IAPState> {
         data: data,
       );
 
-      if (result.dioError?.response?.statusCode == 404) {
+      if (result.dioError == null) {
+        dev.log("IAP: Backend verification successful.");
+        SharedPreferencesManager.clearPendingPurchase();
+      } else if (result.dioError?.response?.statusCode == 404) {
         dev.log("Backend Sync: Subscription verification endpoint not yet implemented (404). Ready for backend update.");
       } else if (result.dioError != null) {
         dev.log("Backend Sync Error: ${result.dioError?.message}");
@@ -226,6 +238,39 @@ class IAPNotifier extends StateNotifier<IAPState> {
     } catch (e) {
       dev.log("Sync Exception: $e");
       state = state.copyWith(isLoading: false);
+    }
+  }
+
+  /// Manually trigger a sync of any purchases that were made but not yet verified
+  /// Call this after successful login or registration.
+  Future<void> syncPendingPurchases() async {
+    final pending = SharedPreferencesManager.getPendingPurchase();
+    if (pending == null || SharedPreferencesManager.getToken().isEmpty) return;
+
+    dev.log("IAP: Syncing pending purchase for ${pending['productId']}");
+    
+    // Create a minimal PurchaseState-like object or just call the sync logic directly
+    try {
+      final data = {
+        'productId': pending['productId'],
+        'purchaseToken': pending['token'],
+        'receiptData': Platform.isIOS ? pending['token'] : null,
+        'packageName': "com.credit.creditvault",
+        'platform': Platform.isAndroid ? 'android' : 'ios',
+      };
+
+      final result = await DioApi.post(
+        path: ConfigUrl.verifySubscription,
+        data: data,
+      );
+
+      if (result.dioError == null) {
+        dev.log("IAP: Pending purchase synced successfully.");
+        SharedPreferencesManager.clearPendingPurchase();
+        await _ref.read(coachProfileProvider.notifier).getCoachProfile();
+      }
+    } catch (e) {
+      dev.log("IAP: Manual sync failed: $e");
     }
   }
 
