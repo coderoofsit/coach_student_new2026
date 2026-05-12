@@ -407,10 +407,21 @@ class _ManagePlansScreenState extends ConsumerState<ManagePlansScreen> {
                         ],
                       ),
                       SizedBox(height: 4.v),
-                      Text(
-                        subtitle,
-                        style: theme.textTheme.bodySmall
-                            ?.copyWith(color: appTheme.black900),
+                      RichText(
+                        text: TextSpan(
+                          style: theme.textTheme.bodySmall?.copyWith(color: appTheme.black900),
+                          children: [
+                            if (subtitle.contains('•')) ...[
+                              TextSpan(text: subtitle.split('•').first),
+                              const TextSpan(text: ' • '),
+                              TextSpan(
+                                text: subtitle.split('•').last.trim(),
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ] else
+                              TextSpan(text: subtitle),
+                          ],
+                        ),
                       ),
                     ],
                   ),

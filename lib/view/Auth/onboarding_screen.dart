@@ -745,8 +745,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             ),
                             if (subtitle.contains('•'))
                               TextSpan(
-                                text: " • ${subtitle.split('•').last}",
-                                style: theme.textTheme.bodySmall?.copyWith(color: Colors.black),
+                                text: " • ${subtitle.split('•').last.trim()}",
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                           ],
                         ),
