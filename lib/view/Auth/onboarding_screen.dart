@@ -218,11 +218,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CustomImageView(
-            imagePath: ImageConstant.appLogo,
-            height: 120.v,
-            width: 120.h,
-          ),
+          SizedBox(
+  height: MediaQuery.of(context).size.height * 0.16,
+  child: AspectRatio(
+    aspectRatio: 1,
+    child: Image.asset(
+      ImageConstant.appLogo,
+      fit: BoxFit.contain,
+    ),
+  ),
+),
           SizedBox(height: 40.v),
           Text(
             "Welcome to CreditVault",
