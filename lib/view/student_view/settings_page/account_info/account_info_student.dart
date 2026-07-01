@@ -40,7 +40,7 @@ class _AccountInfoScreenStudentState
 
   stProfile.StudentProfileModel? studentProfile;
   Future _getImage(ImageSource source) async {
-    final pickedFile = await ImagePicker().pickImage(source: source);
+    final pickedFile = await Utils.pickProfileImage(source);
 
     Utils.cropImage( context,  pickedFile).then((value) {
       if(value != null) {

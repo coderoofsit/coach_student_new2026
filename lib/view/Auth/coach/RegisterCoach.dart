@@ -54,7 +54,7 @@ class _RegisterCoachConsumerState extends ConsumerState<RegisterCoach> {
   File? _image;
 
   Future _getImage(ImageSource source) async {
-    final pickedFile = await ImagePicker().pickImage(source: source);
+    final pickedFile = await Utils.pickProfileImage(source);
 
     Utils.cropImage( context,  pickedFile).then((value) {
       if(value != null) {

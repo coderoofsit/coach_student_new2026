@@ -60,7 +60,7 @@ class _MyProfileCoachConsumerState extends ConsumerState<MyProfileCoach> {
 
   Future _getImage(ImageSource source) async {
     try {
-      final pickedFile = await ImagePicker().pickImage(source: source);
+      final pickedFile = await Utils.pickProfileImage(source);
       
       if (pickedFile == null) {
         // User cancelled the picker

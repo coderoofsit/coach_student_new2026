@@ -8,10 +8,8 @@ import 'package:coach_student/provider/iap_provider.dart';
 import 'package:coach_student/provider/coach/coach_profile_provider.dart';
 import 'package:coach_student/widgets/custom_elevated_button.dart';
 import 'package:coach_student/widgets/custom_outlined_button.dart';
+import 'package:coach_student/widgets/subscription_legal_footer.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:coach_student/view/student_view/settings_page/legal_policies_screen/legal_policies_screen.dart';
-import 'package:iap_package/iap_package.dart';
 
 final _selectedPlanProvider =
 StateProvider.autoDispose<String>((ref) => 'Annual');
@@ -240,43 +238,7 @@ class _ManagePlansScreenState extends ConsumerState<ManagePlansScreen> {
 
                   SizedBox(height: 24.v),
 
-                  // --- Store Guidelines (Point 9) ---
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.h),
-                    child: Text(
-                      "A purchase will be applied to your account. Subscriptions will automatically renew unless canceled within 24-hours before the end of the current period. You can cancel anytime within your account settings. For more information, see our Terms of Service and Privacy Policy.",
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
-                        fontSize: 10.fSize,
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(height: 16.v),
-
-                  // --- Privacy & EULA Links ---
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildFooterLink(
-                        "Privacy Policy",
-                        "", // Empty URL means internal navigation
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const LegalPoliciesScreen()),
-                        ),
-                      ),
-                      if (Platform.isIOS) ...[
-                        Text("  •  ", style: TextStyle(color: Colors.grey[400])),
-                        _buildFooterLink(
-                          "EULA / Terms",
-                          "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/",
-                        ),
-                      ],
-                    ],
-                  ),
+                  const SubscriptionLegalFooter(),
 
                   SizedBox(height: 20.v),
                 ],
@@ -453,25 +415,6 @@ class _ManagePlansScreenState extends ConsumerState<ManagePlansScreen> {
               ),
             ],
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFooterLink(String text, String url, {VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap ?? () async {
-        final uri = Uri.parse(url);
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-        }
-      },
-      child: Text(
-        text,
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: theme.colorScheme.primary,
-          decoration: TextDecoration.underline,
-          fontWeight: FontWeight.w600,
         ),
       ),
     );

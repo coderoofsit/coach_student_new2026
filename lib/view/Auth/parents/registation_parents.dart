@@ -53,7 +53,7 @@ class _RegisterParentsConsumerState extends ConsumerState<RegisterParents> {
 
   Future _getImage(ImageSource source) async {
     try {
-      final pickedFile = await ImagePicker().pickImage(source: source);
+      final pickedFile = await Utils.pickProfileImage(source);
       
       if (pickedFile == null) {
         return; // User cancelled the picker

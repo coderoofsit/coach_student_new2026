@@ -61,6 +61,13 @@ class Utils {
         ],
       );
 
+  static Future<XFile?> pickProfileImage(ImageSource source) async {
+    return ImagePicker().pickImage(
+      source: source,
+      requestFullMetadata: false,
+    );
+  }
+
   static Future<CroppedFile?> cropImage(
       BuildContext context, XFile? pickedFile) async {
     if (pickedFile != null) {

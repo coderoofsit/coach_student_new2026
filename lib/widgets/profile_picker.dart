@@ -4,13 +4,14 @@
 import 'dart:io';
 
 import 'package:coach_student/core/app_export.dart';
+import 'package:coach_student/core/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 
 
 Future<File?> getImage(ImageSource source) async {
-  final pickedFile = await ImagePicker().pickImage(source: source);
+  final pickedFile = await Utils.pickProfileImage(source);
 
   File? image;
   image = pickedFile != null ? File(pickedFile.path) : null;

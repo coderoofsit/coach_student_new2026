@@ -10,6 +10,7 @@ import '../../widgets/custom_elevated_button.dart';
 import '../../widgets/custom_icon_button.dart';
 import '../../widgets/custom_outlined_button.dart';
 import '../../widgets/custom_text_form_field.dart';
+import '../../widgets/subscription_legal_footer.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   final int initialPage;
@@ -566,6 +567,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ),
             ),
           ),
+          SizedBox(height: 16.v),
+          const SubscriptionLegalFooter(),
           SizedBox(height: 20.v),
         ],
       ),
